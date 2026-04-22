@@ -108,77 +108,75 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // 推荐人物
             const Text('推荐人物', style: AppTheme.subtitleStyle),
-            const SizedBox(height: 12.0),
-            SizedBox(
-              height: 120.0,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: recommendedFigures.length,
-                itemBuilder: (context, index) {
-                  final figure = recommendedFigures[index];
-                  return Container(
-                    width: 200,
-                    margin: const EdgeInsets.only(right: 12.0),
-                    child: Card(
-                      margin: EdgeInsets.zero,
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppTheme.cardPadding),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children:
-                            [
-                            Text(figure['name']!, style: AppTheme.subtitleStyle),
-                            Text(figure['era']!, style: AppTheme.captionStyle),
-                            Text(figure['description']!, style: AppTheme.captionStyle),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
+            const SizedBox(height: 16.0),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16.0,
+                mainAxisSpacing: 16.0,
+                childAspectRatio: 2.5,
               ),
+              itemCount: recommendedFigures.length,
+              itemBuilder: (context, index) {
+                final figure = recommendedFigures[index];
+                return Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppTheme.cardPadding),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children:
+                        [
+                        Text(figure['name']!, style: AppTheme.subtitleStyle),
+                        Text(figure['era']!, style: AppTheme.captionStyle),
+                        Text(figure['description']!, style: AppTheme.captionStyle),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: 24.0),
+            const SizedBox(height: 32.0),
 
             // 推荐思想
             const Text('推荐思想', style: AppTheme.subtitleStyle),
-            const SizedBox(height: 12.0),
-            SizedBox(
-              height: 100.0,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: recommendedThoughts.length,
-                itemBuilder: (context, index) {
-                  final thought = recommendedThoughts[index];
-                  return Container(
-                    width: 200,
-                    margin: const EdgeInsets.only(right: 12.0),
-                    child: Card(
-                      margin: EdgeInsets.zero,
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppTheme.cardPadding),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(thought['name']!, style: AppTheme.subtitleStyle),
-                            Text(thought['description']!, style: AppTheme.captionStyle),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
+            const SizedBox(height: 16.0),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16.0,
+                mainAxisSpacing: 16.0,
+                childAspectRatio: 3.0,
               ),
+              itemCount: recommendedThoughts.length,
+              itemBuilder: (context, index) {
+                final thought = recommendedThoughts[index];
+                return Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppTheme.cardPadding),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(thought['name']!, style: AppTheme.subtitleStyle),
+                        Text(thought['description']!, style: AppTheme.captionStyle),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: 32.0),
+            const SizedBox(height: 40.0),
           ],
         ),
       ),
