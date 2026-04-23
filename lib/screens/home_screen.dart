@@ -223,9 +223,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.borderRadius),
                   color: Colors.grey[200],
+                  border: Border.all(color: Colors.grey[300]!, width: 1),
                 ),
-                child: const Center(
-                  child: Text('照片已选择', style: TextStyle(color: Colors.grey)),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.photo, size: 48, color: Colors.grey),
+                      const SizedBox(height: 8),
+                      Text('照片已选择', style: TextStyle(color: Colors.grey[600])),
+                    ],
+                  ),
                 ),
               ),
             
@@ -293,7 +301,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         }
                       }
                     },
-                    child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : Text(_showAIExplanation ? '收起解读' : 'AI解读'),
+                    child: _isLoading 
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        ) 
+                      : Text(_showAIExplanation ? '收起解读' : 'AI解读'),
                   ),
                   const SizedBox(width: 16.0),
                   _buildRefreshButton(),
