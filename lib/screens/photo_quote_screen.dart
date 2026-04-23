@@ -17,21 +17,35 @@ class _PhotoQuoteScreenState extends State<PhotoQuoteScreen> {
 
   // 从相册选择照片
   Future<void> _pickImageFromGallery() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (image != null) {
-      Navigator.pop(context, File(image.path));
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      
+      if (image != null) {
+        Navigator.pop(context, File(image.path));
+      }
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _errorMessage = '选择照片失败：$e';
+      });
     }
   }
 
   // 使用相机拍照
   Future<void> _takePhotoWithCamera() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.camera);
-    
-    if (image != null) {
-      Navigator.pop(context, File(image.path));
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.camera);
+      
+      if (image != null) {
+        Navigator.pop(context, File(image.path));
+      }
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _errorMessage = '拍照失败：$e';
+      });
     }
   }
 
