@@ -128,9 +128,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
     // 随机选择一条名言
     _randomQuote();
-    // 如果AI解读已显示，刷新解读
+    // 如果AI解读已显示，重置解读状态
     if (_showAIExplanation) {
-      _refreshExplanation();
+      setState(() {
+        _showAIExplanation = false;
+      });
     }
   }
 
