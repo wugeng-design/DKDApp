@@ -455,7 +455,7 @@ class _SectScreenState extends State<SectScreen> {
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                borderTop: Border.all(color: AppTheme.borderColor),
+                border: Border(top: BorderSide(color: AppTheme.textSecondaryColor)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
