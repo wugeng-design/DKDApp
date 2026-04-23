@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:io';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/screens/photo_quote_screen.dart';
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   List<String> daoQuotes = [];
   bool _hasFetchedExtraQuotes = false;
   SharedPreferences? _prefs;
+  File? _selectedImage; // 存储选择的照片
 
   // 初始10条道家名言
   final List<String> defaultDaoQuotes = [
@@ -211,6 +213,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             // 今日一言
             const Text('今日一言', style: AppTheme.titleStyle),
             const SizedBox(height: 16.0),
+            
+            // 显示选择的照片
+            if (_selectedImage != null)
+              Container(
+                width: double.infinity,
+                height: 200,
+                margin: const EdgeInsets.only(bottom: 16.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                  color: Colors.grey[200],
+                ),
+                child: const Center(
+                  child: Text('照片已选择', style: TextStyle(color: Colors.grey)),
+                ),
+              ),
+            
             Card(
               margin: EdgeInsets.zero,
               elevation: 2,
@@ -247,7 +265,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         });
                         
                         try {
-                          final explanation = await AIService.getExplanation(todayQuote, style: _explanationStyle);
+                          String quoteToExplain = todayQuote;
+                          
+                          // 如果有选择的照片，先根据照片生成道家真言
+                          if (_selectedImage != null) {
+                            quoteToExplain = await AIService.getQuoteFromImage(_selectedImage!);
+                            setState(() {
+                              todayQuote = quoteToExplain;
+                            });
+                          }
+                          
+                          // 然后解读生成的真言
+                          final explanation = await AIService.getExplanation(quoteToExplain, style: _explanationStyle);
                           setState(() {
                             aiExplanation = explanation;
                             _showAIExplanation = true;
@@ -270,11 +299,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   _buildRefreshButton(),
                   const SizedBox(width: 16.0),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const PhotoQuoteScreen()),
                       );
+                      if (result != null && result is File) {
+                        setState(() {
+                          _selectedImage = result;
+                        });
+                      }
                     },
                     child: const Icon(
                       Icons.photo_camera,
