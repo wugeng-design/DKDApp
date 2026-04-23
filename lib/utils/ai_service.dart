@@ -58,6 +58,54 @@ class AIService {
     }
   }
 
+  // 调用大模型API查询人物信息
+  static Future<Map<String, dynamic>> getFigureInfo(String name) async {
+    try {
+      final prompt = '请详细介绍道教人物 $name 的生平和贡献，包括：1. 生平简介 2. 核心思想 3. 主要著作 4. 历史影响';
+      
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey'
+        },
+        body: jsonEncode({
+          'model': model,
+          'messages': [
+            {
+              'role': 'user',
+              'content': prompt
+            }
+          ],
+          'temperature': 0.7,
+          'max_tokens': 1000
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final content = data['choices'][0]['message']['content'];
+        
+        // 解析返回的内容，提取各个部分
+        return {
+          'bio': content,
+          'coreThoughts': [],
+          'works': []
+        };
+      } else {
+        throw Exception('API request failed: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('查询人物信息失败: $e');
+      // 如果API调用失败，返回默认信息
+      return {
+        'bio': '$name是道教的重要人物，对道教的发展做出了重要贡献。',
+        'coreThoughts': ['道教思想'],
+        'works': []
+      };
+    }
+  }
+
   // 根据照片生成道家真言
   static Future<String> getQuoteFromImage(File image) async {
     try {

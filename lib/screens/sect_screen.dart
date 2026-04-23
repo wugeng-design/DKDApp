@@ -277,23 +277,23 @@ class _SectScreenState extends State<SectScreen> {
   // 处理代表人物点击
   void _handleRepresentativeTap(String name) async {
     // 调用大模型API查询人物信息
-    String figureInfo = await AIService.getExplanation(
-      '请详细介绍道教人物 $name 的生平和贡献',
-      style: 'detailed'
-    );
+    Map<String, dynamic> figureInfo = await AIService.getFigureInfo(name);
     
     // 保存人物信息到本地存储
-    await _saveFigureInfo(name, figureInfo);
+    await _saveFigureInfo(name, figureInfo['bio'], figureInfo['coreThoughts'], figureInfo['works']);
     
-    // 跳转到人物篇并传递人物名字
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => FigureScreen(figureName: name)),
-    );
+    // 直接显示人物详情
+    _showFigureDetail({
+      'name': name,
+      'era': '',
+      'bio': figureInfo['bio'],
+      'coreThoughts': figureInfo['coreThoughts'],
+      'works': figureInfo['works']
+    });
   }
 
   // 保存人物信息到本地存储
-  Future<void> _saveFigureInfo(String name, String info) async {
+  Future<void> _saveFigureInfo(String name, String bio, List<dynamic> coreThoughts, List<dynamic> works) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final figuresJson = prefs.getString('figures');
@@ -310,7 +310,9 @@ class _SectScreenState extends State<SectScreen> {
       int existingIndex = figures.indexWhere((fig) => fig['name'] == name);
       if (existingIndex >= 0) {
         // 更新现有人物信息
-        figures[existingIndex]['bio'] = info;
+        figures[existingIndex]['bio'] = bio;
+        figures[existingIndex]['coreThoughts'] = coreThoughts;
+        figures[existingIndex]['works'] = works;
       } else {
         // 添加新人物
         figures.add({
@@ -319,9 +321,9 @@ class _SectScreenState extends State<SectScreen> {
           'era': '',
           'eraOrder': 999,
           'description': '',
-          'bio': info,
-          'coreThoughts': [],
-          'works': []
+          'bio': bio,
+          'coreThoughts': coreThoughts,
+          'works': works
         });
       }
       
@@ -387,6 +389,64 @@ class _SectScreenState extends State<SectScreen> {
                   );
                 }).toList(),
               ),
+              const SizedBox(height: 32.0),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 显示人物详情
+  void _showFigureDetail(Map<String, dynamic> figure) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(figure['name'], style: AppTheme.titleStyle),
+              Text(figure['era'] ?? '', style: AppTheme.captionStyle),
+              const SizedBox(height: 16.0),
+              Text('简介', style: AppTheme.subtitleStyle),
+              const SizedBox(height: 8.0),
+              Text(figure['bio'] ?? '', style: AppTheme.bodyStyle),
+              const SizedBox(height: 16.0),
+              if (figure['coreThoughts'] != null && figure['coreThoughts'].isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('核心思想', style: AppTheme.subtitleStyle),
+                    const SizedBox(height: 8.0),
+                    Wrap(
+                      spacing: 8.0,
+                      children: figure['coreThoughts'].map<Widget>((thought) {
+                        return Chip(
+                          label: Text(thought),
+                          backgroundColor: AppTheme.accentColor.withOpacity(0.1),
+                          labelStyle: TextStyle(color: AppTheme.accentColor),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16.0),
+                  ],
+                ),
+              if (figure['works'] != null && figure['works'].isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('著作', style: AppTheme.subtitleStyle),
+                    const SizedBox(height: 8.0),
+                    ...figure['works'].map<Widget>((work) {
+                      return Text('• $work', style: AppTheme.bodyStyle);
+                    }).toList(),
+                    const SizedBox(height: 16.0),
+                  ],
+                ),
               const SizedBox(height: 32.0),
             ],
           ),
