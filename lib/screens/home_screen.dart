@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/screens/photo_quote_screen.dart';
@@ -125,18 +126,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   // 刷新名言
   Future<void> _refreshQuote() async {
+    // 清除照片和解读状态
+    setState(() {
+      _selectedImage = null;
+      _showAIExplanation = false;
+      aiExplanation = '';
+    });
+    
     // 第一次刷新时，请求大模型补充名言
     if (!_hasFetchedExtraQuotes) {
       await _fetchExtraQuotes();
     }
     // 随机选择一条名言
     _randomQuote();
-    // 如果AI解读已显示，重置解读状态
-    if (_showAIExplanation) {
-      setState(() {
-        _showAIExplanation = false;
-      });
-    }
   }
 
   // 构建刷新按钮
@@ -224,15 +226,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   borderRadius: BorderRadius.circular(AppTheme.borderRadius),
                   border: Border.all(color: Colors.grey[300]!, width: 1),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                  child: Image.file(
-                    _selectedImage!,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                  ),
-                ),
+                child: kIsWeb
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.photo, size: 48, color: Colors.grey),
+                            const SizedBox(height: 8),
+                            Text('照片已选择', style: TextStyle(color: Colors.grey[600])),
+                          ],
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                        child: Image.file(
+                          _selectedImage!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                      ),
               ),
             
             Card(

@@ -22,9 +22,13 @@ class _PhotoQuoteScreenState extends State<PhotoQuoteScreen> {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
       
       if (image != null) {
+        print('选择的照片路径: ${image.path}');
         Navigator.pop(context, File(image.path));
+      } else {
+        print('未选择照片');
       }
     } catch (e) {
+      print('选择照片失败：$e');
       setState(() {
         _hasError = true;
         _errorMessage = '选择照片失败：$e';
@@ -39,9 +43,13 @@ class _PhotoQuoteScreenState extends State<PhotoQuoteScreen> {
       final XFile? image = await picker.pickImage(source: ImageSource.camera);
       
       if (image != null) {
+        print('拍摄的照片路径: ${image.path}');
         Navigator.pop(context, File(image.path));
+      } else {
+        print('未拍摄照片');
       }
     } catch (e) {
+      print('拍照失败：$e');
       setState(() {
         _hasError = true;
         _errorMessage = '拍照失败：$e';
