@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:dao_app/utils/app_theme.dart';
 
@@ -18,12 +19,14 @@ class _PhotoQuoteScreenState extends State<PhotoQuoteScreen> {
   // 从相册选择照片
   Future<void> _pickImageFromGallery() async {
     try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
       
-      if (image != null) {
-        print('选择的照片路径: ${image.path}');
-        Navigator.pop(context, File(image.path));
+      if (result != null && result.files.single.path != null) {
+        print('选择的照片路径: ${result.files.single.path}');
+        Navigator.pop(context, File(result.files.single.path!));
       } else {
         print('未选择照片');
       }
