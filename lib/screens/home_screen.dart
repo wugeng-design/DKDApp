@@ -482,7 +482,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 crossAxisCount: 2,
                 crossAxisSpacing: 16.0,
                 mainAxisSpacing: 16.0,
-                childAspectRatio: 2.5,
+                childAspectRatio: 1.4,
               ),
               itemCount: recommendedFigures.length,
               itemBuilder: (context, index) {
@@ -499,7 +499,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       children:
                         [
                         Text(figure['name']!, style: AppTheme.subtitleStyle),
+                        const SizedBox(height: 4.0),
                         Text(figure['era']!, style: AppTheme.captionStyle),
+                        const SizedBox(height: 4.0),
                         Text(figure['description']!, style: AppTheme.captionStyle),
                       ],
                     ),
@@ -519,7 +521,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 crossAxisCount: 2,
                 crossAxisSpacing: 16.0,
                 mainAxisSpacing: 16.0,
-                childAspectRatio: 3.0,
+                childAspectRatio: 1.8,
               ),
               itemCount: recommendedThoughts.length,
               itemBuilder: (context, index) {
@@ -535,6 +537,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(thought['name']!, style: AppTheme.subtitleStyle),
+                        const SizedBox(height: 4.0),
                         Text(thought['description']!, style: AppTheme.captionStyle),
                       ],
                     ),
