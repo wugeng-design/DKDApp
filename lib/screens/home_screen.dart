@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/ai_service.dart';
+import 'package:dao_app/screens/photo_quote_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -227,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
             const SizedBox(height: 16.0),
 
-            // 按钮组：AI解读和刷新
+            // 按钮组：AI解读、刷新和照片
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -267,6 +268,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
                   const SizedBox(width: 16.0),
                   _buildRefreshButton(),
+                  const SizedBox(width: 16.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PhotoQuoteScreen()),
+                      );
+                    },
+                    child: const Icon(
+                      Icons.photo_camera,
+                      color: Colors.white,
+                      size: 20.0,
+                    ),
+                  ),
                 ],
               ),
             ),
