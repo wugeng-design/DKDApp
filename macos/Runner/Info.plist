@@ -28,5 +28,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSCameraUsageDescription</key>
+	<string>此应用需要访问相机来拍摄照片，以便为您生成道家真言</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>此应用需要访问照片库来选择照片，以便为您生成道家真言</string>
 </dict>
 </plist>

@@ -321,10 +321,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         context,
                         MaterialPageRoute(builder: (context) => const PhotoQuoteScreen()),
                       );
-                      if (result != null && result is File) {
-                        setState(() {
-                          _selectedImage = result;
-                        });
+                      print('照片选择结果: $result');
+                      if (result != null) {
+                        print('结果类型: ${result.runtimeType}');
+                        if (result is File) {
+                          print('照片路径: ${result.path}');
+                          setState(() {
+                            _selectedImage = result;
+                            print('照片已存储: $_selectedImage');
+                          });
+                        } else {
+                          print('结果不是File类型');
+                        }
+                      } else {
+                        print('没有选择照片');
                       }
                     },
                     child: const Icon(
