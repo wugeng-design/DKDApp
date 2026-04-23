@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/ai_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,14 +11,148 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final String todayQuote = '道可道，非常道；名可名，非常名。无名天地之始，有名万物之母。';
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  String todayQuote = '道可道，非常道；名可名，非常名。无名天地之始，有名万物之母。';
   bool _showAIExplanation = false;
   String aiExplanation = '';
   bool _isLoading = false;
   bool _hasError = false;
   String _errorMessage = '';
   String _explanationStyle = 'default'; // default, concise, detailed, modern
+  List<String> daoQuotes = [];
+  bool _hasFetchedExtraQuotes = false;
+  SharedPreferences? _prefs;
+
+  // 初始10条道家名言
+  final List<String> defaultDaoQuotes = [
+    '道可道，非常道；名可名，非常名。无名天地之始，有名万物之母。',
+    '天下皆知美之为美，斯恶已；皆知善之为善，斯不善已。',
+    '有无相生，难易相成，长短相较，高下相倾，音声相和，前后相随。',
+    '是以圣人处无为之事，行不言之教。',
+    '万物作焉而不辞，生而不有，为而不恃，功成而弗居。',
+    '夫唯弗居，是以不去。',
+    '不尚贤，使民不争；不贵难得之货，使民不为盗；不见可欲，使民心不乱。',
+    '是以圣人之治，虚其心，实其腹，弱其志，强其骨。',
+    '常使民无知无欲，使夫智者不敢为也。为无为，则无不治。',
+    '道冲，而用之或不盈。渊兮，似万物之宗。'
+  ];
+
+  // 动画控制器
+  late AnimationController _refreshController;
+  late Animation<double> _rotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _initQuotes();
+    // 初始化动画控制器
+    _refreshController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _refreshController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
+  }
+
+  // 初始化名言数据
+  Future<void> _initQuotes() async {
+    _prefs = await SharedPreferences.getInstance();
+    final storedQuotes = _prefs?.getStringList('daoQuotes');
+    
+    if (storedQuotes == null || storedQuotes.isEmpty) {
+      // 首次使用，存储默认名言
+      await _prefs?.setStringList('daoQuotes', defaultDaoQuotes);
+      daoQuotes = defaultDaoQuotes;
+    } else {
+      daoQuotes = storedQuotes;
+    }
+    
+    // 随机选择一条名言作为今日一言
+    _randomQuote();
+  }
+
+  // 随机选择一条名言
+  void _randomQuote() {
+    if (daoQuotes.isNotEmpty) {
+      final randomIndex = Random().nextInt(daoQuotes.length);
+      setState(() {
+        todayQuote = daoQuotes[randomIndex];
+      });
+    }
+  }
+
+  // 保存名言到本地存储
+  Future<void> _saveQuotes() async {
+    await _prefs?.setStringList('daoQuotes', daoQuotes);
+  }
+
+  // 请求大模型补充名言
+  Future<void> _fetchExtraQuotes() async {
+    try {
+      // 这里应该调用实际的大模型API
+      // 暂时使用模拟数据
+      final extraQuotes = [
+        '挫其锐，解其纷，和其光，同其尘。',
+        '湛兮，似或存。吾不知谁之子，象帝之先。',
+        '天地不仁，以万物为刍狗；圣人不仁，以百姓为刍狗。',
+        '天地之间，其犹橐龠乎？虚而不屈，动而愈出。',
+        '多言数穷，不如守中。',
+        '谷神不死，是谓玄牝。玄牝之门，是谓天地根。',
+        '绵绵若存，用之不勤。',
+        '天长地久。天地所以能长且久者，以其不自生，故能长生。',
+        '是以圣人后其身而身先，外其身而身存。',
+        '非以其无私邪？故能成其私。'
+      ];
+      
+      // 添加到现有名言列表
+      daoQuotes.addAll(extraQuotes);
+      await _saveQuotes();
+      _hasFetchedExtraQuotes = true;
+    } catch (e) {
+      print('获取额外名言失败: $e');
+    }
+  }
+
+  // 刷新名言
+  Future<void> _refreshQuote() async {
+    // 第一次刷新时，请求大模型补充名言
+    if (!_hasFetchedExtraQuotes) {
+      await _fetchExtraQuotes();
+    }
+    // 随机选择一条名言
+    _randomQuote();
+    // 如果AI解读已显示，刷新解读
+    if (_showAIExplanation) {
+      _refreshExplanation();
+    }
+  }
+
+  // 构建刷新按钮
+  Widget _buildRefreshButton() {
+    return ElevatedButton(
+      onPressed: () async {
+        // 启动旋转动画
+        _refreshController.forward(from: 0);
+        // 执行刷新操作
+        await _refreshQuote();
+      },
+      child: RotationTransition(
+        turns: _rotationAnimation,
+        child: const Icon(
+          Icons.refresh,
+          color: Colors.white,
+          size: 20.0,
+        ),
+      ),
+    );
+  }
 
   // 刷新解读
   void _refreshExplanation() async {
@@ -89,40 +225,47 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16.0),
 
-            // AI解读按钮
+            // 按钮组：AI解读和刷新
             Center(
-              child: ElevatedButton(
-                onPressed: () async {
-                  if (_showAIExplanation) {
-                    setState(() {
-                      _showAIExplanation = false;
-                    });
-                  } else {
-                    setState(() {
-                      _isLoading = true;
-                      _hasError = false;
-                      _errorMessage = '';
-                    });
-                    
-                    try {
-                      final explanation = await AIService.getExplanation(todayQuote, style: _explanationStyle);
-                      setState(() {
-                        aiExplanation = explanation;
-                        _showAIExplanation = true;
-                      });
-                    } catch (e) {
-                      setState(() {
-                        _hasError = true;
-                        _errorMessage = '获取AI解读失败，请稍后重试';
-                      });
-                    } finally {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                    }
-                  }
-                },
-                child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : Text(_showAIExplanation ? '收起解读' : 'AI解读'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (_showAIExplanation) {
+                        setState(() {
+                          _showAIExplanation = false;
+                        });
+                      } else {
+                        setState(() {
+                          _isLoading = true;
+                          _hasError = false;
+                          _errorMessage = '';
+                        });
+                        
+                        try {
+                          final explanation = await AIService.getExplanation(todayQuote, style: _explanationStyle);
+                          setState(() {
+                            aiExplanation = explanation;
+                            _showAIExplanation = true;
+                          });
+                        } catch (e) {
+                          setState(() {
+                            _hasError = true;
+                            _errorMessage = '获取AI解读失败，请稍后重试';
+                          });
+                        } finally {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      }
+                    },
+                    child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : Text(_showAIExplanation ? '收起解读' : 'AI解读'),
+                  ),
+                  const SizedBox(width: 16.0),
+                  _buildRefreshButton(),
+                ],
               ),
             ),
             const SizedBox(height: 16.0),
