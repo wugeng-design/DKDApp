@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
 import 'package:http/http.dart' as http;
 
 class AIService {
@@ -55,4 +57,35 @@ class AIService {
       return '这句话的意思是：可以用言语表达的道，不是永恒的道；可以用名称界定的名，不是永恒的名。无是天地的本始，有是万物的根源。它强调了道的超越性和不可言说性，同时指出了有无相生的辩证关系。';
     }
   }
+
+  // 根据照片生成道家真言
+  static Future<String> getQuoteFromImage(File image) async {
+    try {
+      // 实际项目中，这里应该将图片转换为base64并发送到API
+      // 暂时使用模拟数据
+      await Future.delayed(const Duration(seconds: 1)); // 模拟网络延迟
+      
+      // 模拟生成的道家真言
+      final quotes = [
+        '天地与我并生，而万物与我为一。',
+        '道生一，一生二，二生三，三生万物。',
+        '夫物芸芸，各复归其根。归根曰静，静曰复命。',
+        '大音希声，大象无形。',
+        '万物负阴而抱阳，冲气以为和。',
+        '道之尊，德之贵，夫莫之命而常自然。',
+        '知足者富，强行者有志。',
+        '致虚极，守静笃。万物并作，吾以观复。',
+        '上善若水，水善利万物而不争。',
+        '飘风不终朝，骤雨不终日。'
+      ];
+      
+      // 随机选择一条名言
+      final random = Random();
+      return quotes[random.nextInt(quotes.length)];
+    } catch (e) {
+      // 如果API调用失败，返回默认名言
+      return '道可道，非常道；名可名，非常名。';
+    }
+  }
 }
+
