@@ -4,7 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class FigureScreen extends StatefulWidget {
-  const FigureScreen({super.key});
+  final String? figureName;
+  
+  const FigureScreen({super.key, this.figureName});
 
   @override
   State<FigureScreen> createState() => _FigureScreenState();
@@ -200,6 +202,21 @@ class _FigureScreenState extends State<FigureScreen> {
       setState(() {
         _isLoading = false;
       });
+      
+      // 如果有figureName参数，直接展示该人物的详情
+      if (widget.figureName != null) {
+        final figure = figures.firstWhere(
+          (fig) => fig['name'] == widget.figureName,
+          orElse: () => {
+            'name': widget.figureName!,
+            'era': '',
+            'bio': '正在加载人物信息...',
+            'coreThoughts': [],
+            'works': []
+          }
+        );
+        _showFigureDetail(figure);
+      }
     }
   }
   

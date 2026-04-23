@@ -28,6 +28,7 @@ class _SectScreenState extends State<SectScreen> {
   late List<Map<String, dynamic>> sects;
   int currentPage = 1;
   final int itemsPerPage = 5;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -37,6 +38,10 @@ class _SectScreenState extends State<SectScreen> {
 
   // 从本地存储加载派系数据
   Future<void> _loadSects() async {
+    setState(() {
+      isLoading = true;
+    });
+    
     try {
       final prefs = await SharedPreferences.getInstance();
       final sectsJson = prefs.getString('sects');
@@ -179,7 +184,6 @@ class _SectScreenState extends State<SectScreen> {
       }
       // 按朝代排序
       _sortSectsByDynasty();
-      setState(() {});
     } catch (e) {
       print('加载派系数据失败: $e');
       // 加载失败时使用默认数据
@@ -210,7 +214,10 @@ class _SectScreenState extends State<SectScreen> {
         },
       ];
       _sortSectsByDynasty();
-      setState(() {});
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -278,10 +285,10 @@ class _SectScreenState extends State<SectScreen> {
     // 保存人物信息到本地存储
     await _saveFigureInfo(name, figureInfo);
     
-    // 跳转到人物篇
+    // 跳转到人物篇并传递人物名字
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const FigureScreen()),
+      MaterialPageRoute(builder: (context) => FigureScreen(figureName: name)),
     );
   }
 
@@ -310,12 +317,20 @@ class _SectScreenState extends State<SectScreen> {
           'id': (figures.length + 1).toString(),
           'name': name,
           'era': '',
+          'eraOrder': 999,
           'description': '',
           'bio': info,
           'coreThoughts': [],
           'works': []
         });
       }
+      
+      // 按朝代排序
+      figures.sort((a, b) {
+        int orderA = a['eraOrder'] ?? 999;
+        int orderB = b['eraOrder'] ?? 999;
+        return orderA.compareTo(orderB);
+      });
       
       // 保存到本地存储
       await prefs.setString('figures', jsonEncode(figures));
@@ -368,7 +383,6 @@ class _SectScreenState extends State<SectScreen> {
                       label: Text(rep),
                       backgroundColor: AppTheme.accentColor.withOpacity(0.1),
                       labelStyle: TextStyle(color: AppTheme.accentColor),
-                      onDeleted: () {},
                     ),
                   );
                 }).toList(),
@@ -383,6 +397,20 @@ class _SectScreenState extends State<SectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('派系'),
+          centerTitle: true,
+          backgroundColor: AppTheme.backgroundColor,
+          elevation: 0,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     final currentPageSects = getCurrentPageSects();
     
     return Scaffold(
