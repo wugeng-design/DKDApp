@@ -222,17 +222,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 margin: const EdgeInsets.only(bottom: 16.0),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                  color: Colors.grey[200],
                   border: Border.all(color: Colors.grey[300]!, width: 1),
                 ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.photo, size: 48, color: Colors.grey),
-                      const SizedBox(height: 8),
-                      Text('照片已选择', style: TextStyle(color: Colors.grey[600])),
-                    ],
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                  child: Image.file(
+                    _selectedImage!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
                   ),
                 ),
               ),
