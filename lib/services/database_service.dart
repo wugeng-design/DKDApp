@@ -32,9 +32,29 @@ class DatabaseService {
       throw UnsupportedError('sqflite is not supported on web');
     }
     
-    if (_database != null) return _database!;
+    if (_database != null) {
+      // 检查数据库中是否有数据，如果没有，插入初始数据
+      await _checkAndInsertInitialData(_database!);
+      return _database!;
+    }
     _database = await _initDatabase();
     return _database!;
+  }
+  
+  // 检查并插入初始数据
+  Future<void> _checkAndInsertInitialData(Database db) async {
+    // 先删除现有的数据，确保插入完整的初始数据
+    await db.delete('figure_works');
+    await db.delete('figure_thoughts');
+    await db.delete('figures');
+    
+    await db.delete('sect_representatives');
+    await db.delete('sect_info');
+    await db.delete('sects');
+    
+    // 插入完整的初始数据
+    await _insertDefaultFigures(db);
+    await _insertDefaultSects(db);
   }
 
   Future<Database> _initDatabase() async {
@@ -649,41 +669,33 @@ class DatabaseService {
   // 插入默认人物数据
   Future<void> _insertDefaultFigures(Database db) async {
     final defaultFigures = [
+      // 先秦时期
       {
         'name': '老子',
         'era': '春秋',
         'era_order': 1,
         'description': '道家学派创始人，著有《道德经》',
         'bio': '老子，姓李名耳，字聃，春秋末期人。他是道家学派的创始人，被尊为道教始祖。老子主张无为而治，强调顺应自然，其思想对中国哲学产生了深远影响。',
-        'coreThoughts': ['无为', '道法自然', '小国寡民'],
+        'coreThoughts': ['无为', '道法自然', '小国寡民', '柔弱胜刚强', '玄之又玄'],
         'works': ['道德经']
       },
       {
-        'name': '孔子',
+        'name': '文子',
         'era': '春秋',
         'era_order': 1,
-        'description': '儒家学派创始人，被尊为孔圣人',
-        'bio': '孔子，名丘，字仲尼，春秋时期鲁国人。他是儒家学派的创始人，提出了仁、义、礼、智、信等核心思想，对中国乃至东亚文化产生了深远影响。',
-        'coreThoughts': ['仁', '义', '礼', '智', '信'],
-        'works': ['论语']
+        'description': '道家思想家，老子弟子',
+        'bio': '文子，姓辛名钘，字文子，春秋时期宋国人，老子的弟子。著有《文子》，以"道生法"为核心，将《道德经》的"无为"转化为治国方略，主张"循道而治""以德辅法"，为汉初"黄老之治"提供理论支撑。',
+        'coreThoughts': ['道生法', '循道而治', '以德辅法'],
+        'works': ['文子']
       },
       {
-        'name': '墨子',
-        'era': '战国',
-        'era_order': 2,
-        'description': '墨家学派创始人，主张兼爱非攻',
-        'bio': '墨子，名翟，战国时期宋国人。他是墨家学派的创始人，主张兼爱、非攻、尚贤等思想，对中国古代哲学产生了重要影响。',
-        'coreThoughts': ['兼爱', '非攻', '尚贤', '尚同'],
-        'works': ['墨子']
-      },
-      {
-        'name': '孟子',
-        'era': '战国',
-        'era_order': 2,
-        'description': '儒家代表人物，被尊为亚圣',
-        'bio': '孟子，名轲，战国时期邹国人。他是儒家学派的重要代表人物，继承和发展了孔子的思想，提出了性善论、仁政等观点。',
-        'coreThoughts': ['性善论', '仁政', '民贵君轻'],
-        'works': ['孟子']
+        'name': '关尹子',
+        'era': '春秋',
+        'era_order': 1,
+        'description': '道家思想家，文始派创始人',
+        'bio': '关尹子，名喜，字公度，春秋时期函谷关令。他是老子的弟子，著有《关尹子》，主张"贵清""贵虚"，强调精神的自由和超越，是文始派的创始人。',
+        'coreThoughts': ['贵清', '贵虚', '精神自由'],
+        'works': ['关尹子']
       },
       {
         'name': '庄子',
@@ -691,7 +703,7 @@ class DatabaseService {
         'era_order': 2,
         'description': '道家代表人物，著有《庄子》',
         'bio': '庄子，名周，战国时期宋国人。他是道家学派的重要代表人物，继承和发展了老子的思想。庄子主张逍遥游，追求精神自由，其作品富有哲理和文学性。',
-        'coreThoughts': ['逍遥游', '齐物论', '相对主义'],
+        'coreThoughts': ['逍遥游', '齐物论', '相对主义', '坐忘'],
         'works': ['庄子']
       },
       {
@@ -704,85 +716,383 @@ class DatabaseService {
         'works': ['列子']
       },
       {
-        'name': '荀子',
+        'name': '杨朱',
         'era': '战国',
         'era_order': 2,
-        'description': '儒家代表人物，主张性恶论',
-        'bio': '荀子，名况，战国时期赵国人。他是儒家学派的重要代表人物，主张性恶论，强调后天教育的重要性，对儒家思想的发展做出了重要贡献。',
-        'coreThoughts': ['性恶论', '隆礼重法', '天人相分'],
-        'works': ['荀子']
+        'description': '道家思想家，主张贵己',
+        'bio': '杨朱，战国时期魏国人。他是道家学派的重要代表人物，主张"贵己""重生"，强调个人的生命价值和自由，对后世道教的个人修炼思想有重要影响。',
+        'coreThoughts': ['贵己', '重生', '为我'],
+        'works': ['杨朱篇']
       },
+      
+      // 秦汉时期
       {
-        'name': '韩非子',
-        'era': '战国',
-        'era_order': 2,
-        'description': '法家代表人物，集法家思想之大成',
-        'bio': '韩非子，战国末期韩国人。他是法家学派的代表人物，集法家思想之大成，主张以法治国，对中国古代政治思想产生了深远影响。',
-        'coreThoughts': ['法治', '术治', '势治'],
-        'works': ['韩非子']
-      },
-      {
-        'name': '董仲舒',
-        'era': '西汉',
-        'era_order': 3,
-        'description': '汉代儒家代表人物，提出天人感应学说',
-        'bio': '董仲舒，西汉时期广川人。他是汉代儒家的代表人物，提出了天人感应、大一统等学说，对汉代及后世的政治思想产生了重要影响。',
-        'coreThoughts': ['天人感应', '大一统', '罢黜百家，独尊儒术'],
-        'works': ['春秋繁露']
-      },
-      {
-        'name': '王充',
+        'name': '张道陵',
         'era': '东汉',
+        'era_order': 3,
+        'description': '道教创始人，五斗米道祖师',
+        'bio': '张道陵，字辅汉，东汉时期沛国人。他在四川鹤鸣山创立五斗米道，被尊为"张天师"，是道教的创始人。他以《老子想尔注》将"道"神格化，确立"守戒积善""符箓治病"传教模式。',
+        'coreThoughts': ['守戒积善', '符箓治病', '道即太上老君'],
+        'works': ['老子想尔注']
+      },
+      {
+        'name': '张衡',
+        'era': '东汉',
+        'era_order': 3,
+        'description': '五斗米道第二代天师',
+        'bio': '张衡，字灵真，张道陵之子。他继承父业，继续传播五斗米道，是五斗米道的第二代天师。',
+        'coreThoughts': ['守戒积善', '符箓治病'],
+        'works': []
+      },
+      {
+        'name': '张鲁',
+        'era': '东汉',
+        'era_order': 3,
+        'description': '五斗米道第三代天师',
+        'bio': '张鲁，字公祺，张衡之子。他在汉中建立政教合一政权，推行"宽刑、义舍、禁酒"政策，使汉中成为乱世中的稳定区域，扩大了五斗米道的影响力。',
+        'coreThoughts': ['守戒积善', '符箓治病', '政教合一'],
+        'works': []
+      },
+      {
+        'name': '张角',
+        'era': '东汉',
+        'era_order': 3,
+        'description': '太平道创始人',
+        'bio': '张角，东汉末年钜鹿人。他以《太平经》为理论基础，创立太平道，提出"苍天已死，黄天当立"口号，组织黄巾起义，扩大了道教在底层社会的影响力。',
+        'coreThoughts': ['太平世', '积善成仙', '财物共养'],
+        'works': ['太平经']
+      },
+      {
+        'name': '于吉',
+        'era': '东汉',
+        'era_order': 3,
+        'description': '太平道思想传播者',
+        'bio': '于吉，东汉末年琅琊人。他整理编纂《太平经》，融合道家无为、儒家伦理与民间信仰，主张"太平世"理想，强调"积善成仙""财物共养"。',
+        'coreThoughts': ['太平世', '积善成仙', '财物共养'],
+        'works': ['太平经']
+      },
+      {
+        'name': '魏伯阳',
+        'era': '东汉',
+        'era_order': 3,
+        'description': '丹道理论奠基人',
+        'bio': '魏伯阳，东汉末年会稽上虞人。他著有《周易参同契》，融合《周易》阴阳学说、黄老思想与炼丹术，首次系统阐述"内丹"与"外丹"理论，为后世丹道学提供核心框架。',
+        'coreThoughts': ['内丹', '外丹', '周易参同'],
+        'works': ['周易参同契']
+      },
+      
+      // 魏晋南北朝时期
+      {
+        'name': '葛玄',
+        'era': '三国',
         'era_order': 4,
-        'description': '东汉思想家，批判谶纬迷信',
-        'bio': '王充，东汉时期会稽上虞人。他是东汉时期的思想家，批判谶纬迷信，主张无神论，对中国古代唯物主义思想的发展做出了重要贡献。',
-        'coreThoughts': ['无神论', '唯物主义', '疾虚妄'],
-        'works': ['论衡']
+        'description': '灵宝派祖师',
+        'bio': '葛玄，字孝先，三国时期吴国人。他传习"灵宝经法"，擅长符箓驱邪、炼丹养生，整理道教法术文献，是灵宝派的祖师。',
+        'coreThoughts': ['灵宝经法', '符箓驱邪', '炼丹养生'],
+        'works': []
       },
       {
-        'name': '郭象',
-        'era': '魏晋',
-        'era_order': 5,
-        'description': '魏晋玄学代表人物，注《庄子》',
-        'bio': '郭象，魏晋时期河南人。他是魏晋玄学的代表人物，注《庄子》，提出了独化论等思想，对魏晋玄学的发展做出了重要贡献。',
-        'coreThoughts': ['独化论', '玄冥', '自然'],
-        'works': ['庄子注']
+        'name': '葛洪',
+        'era': '东晋',
+        'era_order': 4,
+        'description': '道教理论家、炼丹家',
+        'bio': '葛洪，字稚川，东晋时期丹阳句容人。他著有《抱朴子》，系统阐述金丹修炼理论，为丹道奠定基础，同时也是著名的医药学家。',
+        'coreThoughts': ['金丹修炼', '神仙方术', '医药养生'],
+        'works': ['抱朴子', '肘后备急方']
       },
       {
-        'name': '韩愈',
+        'name': '魏华存',
+        'era': '东晋',
+        'era_order': 4,
+        'description': '上清派祖师',
+        'bio': '魏华存，字贤安，东晋时期任城人。她是上清派的创始人，传《上清经》，主张存思守一的修炼方法，被尊为"紫虚元君"。',
+        'coreThoughts': ['存思守一', '上清经法'],
+        'works': ['黄庭经']
+      },
+      {
+        'name': '杨羲',
+        'era': '东晋',
+        'era_order': 4,
+        'description': '上清派重要传人',
+        'bio': '杨羲，东晋时期吴国人。他是上清派的重要传人，传习《上清经》，整理上清派经典，对上清派的发展做出了重要贡献。',
+        'coreThoughts': ['存思守一', '上清经法'],
+        'works': []
+      },
+      {
+        'name': '许谧',
+        'era': '东晋',
+        'era_order': 4,
+        'description': '上清派重要传人',
+        'bio': '许谧，东晋时期丹阳句容人。他是上清派的重要传人，与杨羲一起整理上清派经典，对上清派的发展做出了重要贡献。',
+        'coreThoughts': ['存思守一', '上清经法'],
+        'works': []
+      },
+      {
+        'name': '陶弘景',
+        'era': '南朝',
+        'era_order': 4,
+        'description': '茅山宗创始人',
+        'bio': '陶弘景，字通明，南朝时期丹阳秣陵人。他整理上清派典籍，构建道教神仙体系，撰写《真灵位业图》，使茅山成为道教上清派的中心，被尊为"华阳真人"。',
+        'coreThoughts': ['神仙体系', '三教合一', '内丹修炼'],
+        'works': ['真诰', '登真隐诀', '真灵位业图']
+      },
+      {
+        'name': '寇谦之',
+        'era': '北魏',
+        'era_order': 4,
+        'description': '新天师道创始人',
+        'bio': '寇谦之，字辅真，北魏时期冯翊万年人。他改革天师道，清整戒律，创立新天师道，获得北魏统治者的正式承认，成为官方宗教。',
+        'coreThoughts': ['清整戒律', '新天师道'],
+        'works': []
+      },
+      {
+        'name': '陆修静',
+        'era': '南朝',
+        'era_order': 4,
+        'description': '道教经典整理者',
+        'bio': '陆修静，字元德，南朝时期吴兴东迁人。他整理道教经典，总括三洞，撰写《三洞经书目录》，建立了完善的经典教义与科戒仪式，极大地推进了灵宝派的发展。',
+        'coreThoughts': ['三洞经书', '科戒仪式'],
+        'works': ['三洞经书目录']
+      },
+      
+      // 隋唐时期
+      {
+        'name': '孙思邈',
         'era': '唐代',
+        'era_order': 5,
+        'description': '道医、丹道大师',
+        'bio': '孙思邈，唐代京兆华原人。他融道医与丹道，著《千金方》，被誉为"药王"，对道教医学的发展做出了重要贡献。',
+        'coreThoughts': ['道医结合', '养生保健'],
+        'works': ['千金方', '千金翼方']
+      },
+      {
+        'name': '司马承祯',
+        'era': '唐代',
+        'era_order': 5,
+        'description': '上清派传人',
+        'bio': '司马承祯，字子微，唐代河内温人。他弘扬上清派修炼法门，著《坐忘论》，主张"坐忘""主静"的修炼方法，对道教内丹学的发展做出了重要贡献。',
+        'coreThoughts': ['坐忘', '主静'],
+        'works': ['坐忘论']
+      },
+      {
+        'name': '吴筠',
+        'era': '唐代',
+        'era_order': 5,
+        'description': '上清派传人',
+        'bio': '吴筠，字贞节，唐代华州华阴人。他弘扬上清派修炼法门，著《玄纲论》，主张"守静""坐忘"的修炼方法，对道教内丹学的发展做出了重要贡献。',
+        'coreThoughts': ['守静', '坐忘'],
+        'works': ['玄纲论']
+      },
+      {
+        'name': '王玄甫',
+        'era': '唐代',
+        'era_order': 5,
+        'description': '少阳派始祖',
+        'bio': '王玄甫，唐代人，号东华帝君。他传承金丹道脉，为少阳派始祖，开启钟吕金丹道传承，奠定后世丹道主流基础。',
+        'coreThoughts': ['金丹道', '内丹修炼'],
+        'works': []
+      },
+      {
+        'name': '钟离权',
+        'era': '唐代',
+        'era_order': 5,
+        'description': '少阳派传人',
+        'bio': '钟离权，唐代咸阳人，号正阳子。他传承金丹道脉，与吕洞宾一起创立钟吕金丹道，对后世丹道学的发展做出了重要贡献。',
+        'coreThoughts': ['金丹道', '性命双修'],
+        'works': []
+      },
+      {
+        'name': '吕洞宾',
+        'era': '唐代',
+        'era_order': 5,
+        'description': '纯阳派创始人',
+        'bio': '吕洞宾，唐代河中府永乐县人，号纯阳子。他传承金丹道脉，创立纯阳派，主张性命双修，对后世丹道学的发展做出了重要贡献。',
+        'coreThoughts': ['纯阳道', '性命双修'],
+        'works': []
+      },
+      
+      // 宋辽金时期
+      {
+        'name': '陈抟',
+        'era': '北宋',
         'era_order': 6,
-        'description': '唐代文学家、思想家，倡导古文运动',
-        'bio': '韩愈，唐代河南河阳人。他是唐代著名的文学家、思想家，倡导古文运动，提出了道统说，对宋明理学的产生有重要影响。',
-        'coreThoughts': ['道统说', '文以载道', '复古'],
-        'works': ['韩昌黎集']
+        'description': '文始派传人',
+        'bio': '陈抟，字图南，北宋时期亳州真源人。他传承文始派脉，融文始、少阳二派精髓，著《指玄篇》，影响张三丰丹法，被尊为"希夷先生"。',
+        'coreThoughts': ['指玄', '内丹修炼'],
+        'works': ['指玄篇', '无极图']
       },
       {
-        'name': '朱熹',
-        'era': '宋代',
-        'era_order': 7,
-        'description': '宋代理学集大成者，主张格物致知',
-        'bio': '朱熹，宋代徽州婺源人。他是宋代理学的集大成者，主张格物致知、存天理灭人欲，对中国后期封建社会的思想产生了深远影响。',
-        'coreThoughts': ['格物致知', '存天理灭人欲', '理气论'],
-        'works': ['四书章句集注']
+        'name': '张伯端',
+        'era': '北宋',
+        'era_order': 6,
+        'description': '南宗创始人',
+        'bio': '张伯端，字平叔，北宋时期天台人。他创立金丹派南宗，主先命后性，著《悟真篇》，对后世丹道学的发展做出了重要贡献。',
+        'coreThoughts': ['先命后性', '内丹修炼'],
+        'works': ['悟真篇']
       },
       {
-        'name': '王阳明',
+        'name': '王重阳',
+        'era': '金代',
+        'era_order': 6,
+        'description': '全真道创始人',
+        'bio': '王重阳，字知明，金代咸阳人。他创立全真道，主张三教合一、先性后命，传北七真，对道教的发展做出了重要贡献。',
+        'coreThoughts': ['三教合一', '先性后命', '出家清修'],
+        'works': ['重阳立教十五论']
+      },
+      {
+        'name': '丘处机',
+        'era': '金代',
+        'era_order': 6,
+        'description': '龙门派创始人',
+        'bio': '丘处机，字通密，金代登州栖霞人。他是全真七子之一，创立龙门派，主张"功行双全"，对全真道的发展做出了重要贡献。',
+        'coreThoughts': ['功行双全', '龙门心法'],
+        'works': ['大丹直指']
+      },
+      {
+        'name': '马钰',
+        'era': '金代',
+        'era_order': 6,
+        'description': '遇仙派创始人',
+        'bio': '马钰，字玄宝，金代宁海人。他是全真七子之一，创立遇仙派，主张"清净无为"，对全真道的发展做出了重要贡献。',
+        'coreThoughts': ['清净无为'],
+        'works': []
+      },
+      {
+        'name': '谭处端',
+        'era': '金代',
+        'era_order': 6,
+        'description': '南无派创始人',
+        'bio': '谭处端，字通正，金代宁海人。他是全真七子之一，创立南无派，主张"清静无为"，对全真道的发展做出了重要贡献。',
+        'coreThoughts': ['清静无为'],
+        'works': []
+      },
+      {
+        'name': '刘处玄',
+        'era': '金代',
+        'era_order': 6,
+        'description': '随山派创始人',
+        'bio': '刘处玄，字通妙，金代东莱人。他是全真七子之一，创立随山派，主张"无为而治"，对全真道的发展做出了重要贡献。',
+        'coreThoughts': ['无为而治'],
+        'works': []
+      },
+      {
+        'name': '王处一',
+        'era': '金代',
+        'era_order': 6,
+        'description': '嵛山派创始人',
+        'bio': '王处一，字通叟，金代宁海人。他是全真七子之一，创立嵛山派，主张"清静无为"，对全真道的发展做出了重要贡献。',
+        'coreThoughts': ['清静无为'],
+        'works': []
+      },
+      {
+        'name': '郝大通',
+        'era': '金代',
+        'era_order': 6,
+        'description': '华山派创始人',
+        'bio': '郝大通，字太古，金代宁海人。他是全真七子之一，创立华山派，主张"清静无为"，对全真道的发展做出了重要贡献。',
+        'coreThoughts': ['清静无为'],
+        'works': []
+      },
+      {
+        'name': '孙不二',
+        'era': '金代',
+        'era_order': 6,
+        'description': '清静派创始人',
+        'bio': '孙不二，号清静散人，金代宁海人。她是全真七子之一，创立清静派，主张"清静无为"，是唯一的女性创始人。',
+        'coreThoughts': ['清静无为'],
+        'works': []
+      },
+      {
+        'name': '白玉蟾',
+        'era': '南宋',
+        'era_order': 6,
+        'description': '南宗重要传人',
+        'bio': '白玉蟾，字如晦，南宋时期琼州人。他是金丹派南宗的重要传人，主张性命双修，对南宗的发展做出了重要贡献。',
+        'coreThoughts': ['性命双修', '内丹修炼'],
+        'works': ['海琼玉蟾先生文集']
+      },
+      {
+        'name': '萧抱珍',
+        'era': '金代',
+        'era_order': 6,
+        'description': '太一道创始人',
+        'bio': '萧抱珍，金代卫州人。他创立太一道，重符箓斋醮，规定道士必须出家，七传以后逐渐与正一道相融合。',
+        'coreThoughts': ['太一三元法箓', '符箓斋醮'],
+        'works': []
+      },
+      {
+        'name': '刘德仁',
+        'era': '金代',
+        'era_order': 6,
+        'description': '真大道创始人',
+        'bio': '刘德仁，金代沧州乐陵人。他创立真大道，以清心寡欲、谦卑自守、力作而食为教旨，元以后逐渐衰落并消失。',
+        'coreThoughts': ['清心寡欲', '谦卑自守', '力作而食'],
+        'works': []
+      },
+      
+      // 元明清时期
+      {
+        'name': '张三丰',
         'era': '明代',
-        'era_order': 8,
-        'description': '明代心学集大成者，主张知行合一',
-        'bio': '王阳明，明代浙江余姚人。他是明代心学的集大成者，主张心即理、知行合一、致良知，对中国后期封建社会的思想产生了重要影响。',
-        'coreThoughts': ['心即理', '知行合一', '致良知'],
-        'works': ['传习录']
+        'era_order': 7,
+        'description': '三丰派创始人',
+        'bio': '张三丰，明代辽东懿州人。他创立三丰派，融文始、少阳二派，主张性命双修，对道教的发展做出了重要贡献。',
+        'coreThoughts': ['性命双修', '三教合一', '内丹修炼'],
+        'works': ['张三丰全集']
       },
       {
-        'name': '王夫之',
-        'era': '明末清初',
-        'era_order': 9,
-        'description': '明末清初思想家，批判程朱理学',
-        'bio': '王夫之，明末清初湖南衡阳人。他是明末清初的思想家，批判程朱理学，主张气一元论、经世致用，对中国近代思想的发展产生了重要影响。',
-        'coreThoughts': ['气一元论', '经世致用', '动静观'],
-        'works': ['船山遗书']
+        'name': '张正常',
+        'era': '明代',
+        'era_order': 7,
+        'description': '正一道天师',
+        'bio': '张正常，明代龙虎山道士。他是正一道的天师，受朝廷认可，延续天师道的传承。',
+        'coreThoughts': ['正一道规'],
+        'works': []
+      },
+      {
+        'name': '张宇初',
+        'era': '明代',
+        'era_order': 7,
+        'description': '正一道天师',
+        'bio': '张宇初，明代龙虎山道士。他是正一道的天师，著《道门十规》，对正一道的发展做出了重要贡献。',
+        'coreThoughts': ['道门十规', '正一道规'],
+        'works': ['道门十规']
+      },
+      {
+        'name': '伍冲虚',
+        'era': '明代',
+        'era_order': 7,
+        'description': '伍柳派创始人',
+        'bio': '伍冲虚，明代江西南昌人。他创立伍柳派，简化丹道修炼法门，对丹道学的发展做出了重要贡献。',
+        'coreThoughts': ['内丹简化'],
+        'works': ['伍柳仙宗']
+      },
+      {
+        'name': '柳华阳',
+        'era': '清代',
+        'era_order': 8,
+        'description': '伍柳派创始人',
+        'bio': '柳华阳，清代江西南昌人。他与伍冲虚一起创立伍柳派，简化丹道修炼法门，对丹道学的发展做出了重要贡献。',
+        'coreThoughts': ['内丹简化'],
+        'works': ['伍柳仙宗']
+      },
+      {
+        'name': '赵避尘',
+        'era': '清代',
+        'era_order': 8,
+        'description': '千峰派创始人',
+        'bio': '赵避尘，清代北京人。他创立千峰派，改丹道单传为普传，对丹道学的发展做出了重要贡献。',
+        'coreThoughts': ['丹道普传', '内丹修炼'],
+        'works': ['性命法诀明指']
+      },
+      {
+        'name': '张恩溥',
+        'era': '清代',
+        'era_order': 8,
+        'description': '正一道天师',
+        'bio': '张恩溥，清代龙虎山道士。他是正一道的天师，第六十三代天师，赴台延续道统。',
+        'coreThoughts': ['正一道规'],
+        'works': []
       },
     ];
 
@@ -818,118 +1128,387 @@ class DatabaseService {
   // 插入默认派系数据
   Future<void> _insertDefaultSects(Database db) async {
     final defaultSects = [
+      // 早期道教
       {
-        'name': '正一道',
+        'name': '五斗米道',
         'dynasty': '东汉',
-        'practice': '符箓',
-        'description': '正一道是道教的主要派别之一，由张道陵创立于东汉末年。注重符箓法术，强调通过仪式和法术来达到修仙的目的。',
+        'practice': '符箓、斋醮',
+        'description': '五斗米道是道教的早期派别之一，由张道陵创立于东汉末年。因入道者需缴纳五斗米而得名，后发展为正一道。',
         'info': {
-          '修行方式': '符箓、斋醮、科仪',
-          '理念': '驱邪避凶、祈福禳灾',
-          '经典': '《道德经》、《太平经》',
-          '圣地': '龙虎山、青城山'
+          '修行方式': '符箓治病、斋醮科仪、守戒积善',
+          '理念': '道即太上老君、长生久视、济世度人',
+          '经典': '《老子想尔注》、《道德经》',
+          '圣地': '龙虎山、鹤鸣山'
         },
         'representatives': ['张道陵', '张衡', '张鲁']
       },
       {
+        'name': '太平道',
+        'dynasty': '东汉',
+        'practice': '符箓、祝祷',
+        'description': '太平道是道教的早期派别之一，由张角创立于东汉末年。以《太平经》为主要经典，发动了黄巾起义。',
+        'info': {
+          '修行方式': '符箓治病、祝祷祈福、积善成仙',
+          '理念': '太平世、财物共养、天人合一',
+          '经典': '《太平经》',
+          '圣地': '钜鹿'
+        },
+        'representatives': ['张角', '于吉']
+      },
+      
+      // 魏晋南北朝时期
+      {
         'name': '上清派',
-        'dynasty': '魏晋',
-        'practice': '存思',
+        'dynasty': '东晋',
+        'practice': '存思、服气',
         'description': '上清派是道教的重要派别之一，以《上清经》为主要经典，强调存思守一的修炼方法。由魏华存创立。',
         'info': {
-          '修行方式': '存思、服气、内丹',
-          '理念': '上清道妙、存思成仙',
-          '经典': '《上清大洞真经》',
+          '修行方式': '存思守一、服气辟谷、内丹修炼',
+          '理念': '上清道妙、存思成仙、重个人修炼',
+          '经典': '《上清大洞真经》、《黄庭经》',
           '圣地': '茅山、天台山'
         },
         'representatives': ['魏华存', '杨羲', '许谧']
       },
       {
         'name': '灵宝派',
-        'dynasty': '魏晋',
-        'practice': '斋醮',
+        'dynasty': '东晋',
+        'practice': '斋醮、诵经',
         'description': '灵宝派是道教的重要派别之一，以《灵宝经》为主要经典，强调斋醮科仪的重要性。由葛玄创立。',
         'info': {
-          '修行方式': '斋醮、符箓、诵经',
-          '理念': '超度亡灵、积累功德',
+          '修行方式': '斋醮科仪、诵经祈福、超度亡灵',
+          '理念': '积累功德、超度亡灵、仙道合一',
           '经典': '《灵宝无量度人上品妙经》',
           '圣地': '阁皂山'
         },
         'representatives': ['葛玄', '葛洪', '陆修静']
       },
       {
+        'name': '三皇派',
+        'dynasty': '东晋',
+        'practice': '符箓、辟谷',
+        'description': '三皇派是道教的重要派别之一，以《三皇经》为主要经典，注重符箓法术和辟谷修炼。',
+        'info': {
+          '修行方式': '符箓驱邪、辟谷养生、存思修炼',
+          '理念': '三皇之道、长生久视、济世度人',
+          '经典': '《三皇经》',
+          '圣地': '罗浮山'
+        },
+        'representatives': ['鲍靓', '葛洪']
+      },
+      {
+        'name': '楼观道',
+        'dynasty': '南北朝',
+        'practice': '诵经、炼丹',
+        'description': '楼观道是道教的重要派别之一，以陕西楼观台为中心，注重诵经和炼丹。',
+        'info': {
+          '修行方式': '诵经祈福、炼丹养生、符箓驱邪',
+          '理念': '老子之道、长生久视、济世度人',
+          '经典': '《道德经》、《西升经》',
+          '圣地': '楼观台'
+        },
+        'representatives': ['尹喜', '梁谌']
+      },
+      {
         'name': '茅山派',
-        'dynasty': '隋唐',
-        'practice': '符箓',
+        'dynasty': '南朝',
+        'practice': '符箓、内丹',
         'description': '茅山派是道教的重要派别之一，以茅山为圣地，注重符箓法术和内丹修炼。由陶弘景发展壮大。',
         'info': {
-          '修行方式': '符箓、内丹、斋醮',
-          '理念': '济世度人、修道成仙',
+          '修行方式': '符箓驱邪、内丹修炼、斋醮科仪',
+          '理念': '济世度人、修道成仙、三教合一',
           '经典': '《真诰》、《登真隐诀》',
           '圣地': '茅山'
         },
         'representatives': ['陶弘景', '司马承祯', '吴筠']
       },
+      
+      // 隋唐时期
       {
-        'name': '全真派',
-        'dynasty': '北宋',
-        'practice': '清修',
-        'description': '全真派是道教的重要派别之一，由王重阳创立，主张性命双修，强调内心的修炼和精神的超越。',
+        'name': '天师道',
+        'dynasty': '隋唐',
+        'practice': '符箓、斋醮',
+        'description': '天师道是道教的重要派别之一，由张道陵后裔传承，注重符箓法术和斋醮科仪。',
         'info': {
-          '修行方式': '内丹修炼、清修、戒律',
-          '理念': '全真而仙、三教合一',
-          '经典': '《道德经》、《清静经》',
+          '修行方式': '符箓驱邪、斋醮科仪、守戒积善',
+          '理念': '道即太上老君、长生久视、济世度人',
+          '经典': '《道德经》、《正一经》',
+          '圣地': '龙虎山'
+        },
+        'representatives': ['张道陵', '张衡', '张鲁']
+      },
+      {
+        'name': '钟吕金丹派',
+        'dynasty': '唐代',
+        'practice': '内丹',
+        'description': '钟吕金丹派是道教的重要派别之一，由钟离权和吕洞宾创立，注重内丹修炼。',
+        'info': {
+          '修行方式': '内丹修炼、性命双修、服气辟谷',
+          '理念': '金丹大道、性命双修、长生久视',
+          '经典': '《钟吕传道集》、《灵宝毕法》',
+          '圣地': '终南山'
+        },
+        'representatives': ['钟离权', '吕洞宾', '刘海蟾']
+      },
+      
+      // 宋辽金时期
+      {
+        'name': '金丹派南宗',
+        'dynasty': '北宋',
+        'practice': '内丹',
+        'description': '金丹派南宗是道教的重要派别之一，由张伯端创立，主张先命后性的内丹修炼方法。',
+        'info': {
+          '修行方式': '内丹修炼、先命后性、性命双修',
+          '理念': '金丹大道、性命双修、长生久视',
+          '经典': '《悟真篇》',
+          '圣地': '天台'
+        },
+        'representatives': ['张伯端', '石泰', '薛道光']
+      },
+      {
+        'name': '全真道',
+        'dynasty': '金代',
+        'practice': '内丹、清修',
+        'description': '全真道是道教的重要派别之一，由王重阳创立，主张三教合一、先性后命的内丹修炼方法。',
+        'info': {
+          '修行方式': '内丹修炼、清修戒律、三教合一',
+          '理念': '全真而仙、三教合一、性命双修',
+          '经典': '《道德经》、《清静经》、《重阳立教十五论》',
           '圣地': '终南山、昆嵛山'
         },
         'representatives': ['王重阳', '丘处机', '马钰']
       },
       {
+        'name': '太一道',
+        'dynasty': '金代',
+        'practice': '符箓、斋醮',
+        'description': '太一道是道教的重要派别之一，由萧抱珍创立，注重符箓斋醮，规定道士必须出家。',
+        'info': {
+          '修行方式': '符箓斋醮、诵经祈福、守戒积善',
+          '理念': '太一三元法箓、驱邪避凶、祈福禳灾',
+          '经典': '《太一三元法箓》',
+          '圣地': '卫州'
+        },
+        'representatives': ['萧抱珍', '萧道熙', '萧志冲']
+      },
+      {
+        'name': '真大道',
+        'dynasty': '金代',
+        'practice': '清修、慈善',
+        'description': '真大道是道教的重要派别之一，由刘德仁创立，以清心寡欲、谦卑自守、力作而食为教旨。',
+        'info': {
+          '修行方式': '清心寡欲、谦卑自守、力作而食',
+          '理念': '大道无为、济世度人、慈善为本',
+          '经典': '《真大道教规》',
+          '圣地': '沧州'
+        },
+        'representatives': ['刘德仁', '郦希成', '张清志']
+      },
+      {
         'name': '净明道',
         'dynasty': '南宋',
-        'practice': '忠孝',
+        'practice': '忠孝、内丹',
         'description': '净明道是道教的重要派别之一，强调忠孝伦理，融合儒家思想与道教修炼。由许逊创立。',
         'info': {
-          '修行方式': '忠孝伦理、内丹修炼',
-          '理念': '净明忠孝、仙道合一',
+          '修行方式': '忠孝伦理、内丹修炼、积善立功',
+          '理念': '净明忠孝、仙道合一、济世度人',
           '经典': '《净明忠孝全书》',
           '圣地': '西山万寿宫'
         },
         'representatives': ['许逊', '刘玉', '黄元吉']
       },
       {
+        'name': '神霄派',
+        'dynasty': '北宋',
+        'practice': '符箓、雷法',
+        'description': '神霄派是道教的重要派别之一，注重符箓法术和雷法，强调通过法术来达到修仙的目的。',
+        'info': {
+          '修行方式': '符箓雷法、斋醮科仪、存思修炼',
+          '理念': '雷法驱邪、祈福禳灾、修道成仙',
+          '经典': '《高上神霄玉清真王紫书大法》',
+          '圣地': '龙虎山'
+        },
+        'representatives': ['王文卿', '林灵素', '张虚靖']
+      },
+      {
+        'name': '清微派',
+        'dynasty': '南宋',
+        'practice': '符箓、雷法',
+        'description': '清微派是道教的重要派别之一，注重符箓法术和雷法，强调通过法术来达到修仙的目的。',
+        'info': {
+          '修行方式': '符箓雷法、斋醮科仪、存思修炼',
+          '理念': '清微道妙、雷法驱邪、修道成仙',
+          '经典': '《清微元降大法》',
+          '圣地': '青城山'
+        },
+        'representatives': ['黄舜申', '李少微', '张道贵']
+      },
+      {
+        'name': '天心派',
+        'dynasty': '北宋',
+        'practice': '符箓、雷法',
+        'description': '天心派是道教的重要派别之一，注重符箓法术和雷法，强调通过法术来达到修仙的目的。',
+        'info': {
+          '修行方式': '符箓雷法、斋醮科仪、存思修炼',
+          '理念': '天心正法、驱邪避凶、修道成仙',
+          '经典': '《天心正法》',
+          '圣地': '龙虎山'
+        },
+        'representatives': ['饶洞天', '路时中', '雷时中']
+      },
+      
+      // 元明清时期
+      {
         'name': '龙门派',
-        'dynasty': '元',
-        'practice': '清修',
+        'dynasty': '元代',
+        'practice': '内丹、清修',
         'description': '龙门派是全真派的重要支派，由丘处机创立，强调严格的清修戒律和内丹修炼。',
         'info': {
-          '修行方式': '内丹修炼、清修戒律',
-          '理念': '龙门心法、全真传承',
-          '经典': '《邱祖全书》',
+          '修行方式': '内丹修炼、清修戒律、功行双全',
+          '理念': '龙门心法、全真传承、修道成仙',
+          '经典': '《邱祖全书》、《龙门心法》',
           '圣地': '白云观、崂山'
         },
         'representatives': ['丘处机', '尹志平', '李志常']
       },
       {
-        'name': '正一派',
-        'dynasty': '明',
-        'practice': '符箓',
-        'description': '正一派是道教的主要派别之一，由张道陵后裔传承，注重符箓法术和斋醮科仪。',
+        'name': '遇仙派',
+        'dynasty': '元代',
+        'practice': '内丹、清修',
+        'description': '遇仙派是全真派的重要支派，由马钰创立，强调清净无为的修炼方法。',
         'info': {
-          '修行方式': '符箓、斋醮、科仪',
-          '理念': '驱邪避凶、祈福禳灾',
-          '经典': '《正统道藏》',
+          '修行方式': '内丹修炼、清修戒律、清净无为',
+          '理念': '遇仙得道、清净无为、修道成仙',
+          '经典': '《洞玄金玉集》',
+          '圣地': '宁海'
+        },
+        'representatives': ['马钰', '马丹阳', '马钰之妻孙不二']
+      },
+      {
+        'name': '南无派',
+        'dynasty': '元代',
+        'practice': '内丹、清修',
+        'description': '南无派是全真派的重要支派，由谭处端创立，强调清静无为的修炼方法。',
+        'info': {
+          '修行方式': '内丹修炼、清修戒律、清静无为',
+          '理念': '南无大道、清静无为、修道成仙',
+          '经典': '《水云集》',
+          '圣地': '宁海'
+        },
+        'representatives': ['谭处端', '谭长真']
+      },
+      {
+        'name': '随山派',
+        'dynasty': '元代',
+        'practice': '内丹、清修',
+        'description': '随山派是全真派的重要支派，由刘处玄创立，强调无为而治的修炼方法。',
+        'info': {
+          '修行方式': '内丹修炼、清修戒律、无为而治',
+          '理念': '随山修道、无为而治、修道成仙',
+          '经典': '《仙乐集》',
+          '圣地': '东莱'
+        },
+        'representatives': ['刘处玄', '刘长生']
+      },
+      {
+        'name': '嵛山派',
+        'dynasty': '元代',
+        'practice': '内丹、清修',
+        'description': '嵛山派是全真派的重要支派，由王处一创立，强调清静无为的修炼方法。',
+        'info': {
+          '修行方式': '内丹修炼、清修戒律、清静无为',
+          '理念': '嵛山修道、清静无为、修道成仙',
+          '经典': '《云光集》',
+          '圣地': '昆嵛山'
+        },
+        'representatives': ['王处一', '王玉阳']
+      },
+      {
+        'name': '华山派',
+        'dynasty': '元代',
+        'practice': '内丹、清修',
+        'description': '华山派是全真派的重要支派，由郝大通创立，强调清静无为的修炼方法。',
+        'info': {
+          '修行方式': '内丹修炼、清修戒律、清静无为',
+          '理念': '华山修道、清静无为、修道成仙',
+          '经典': '《太古集》',
+          '圣地': '华山'
+        },
+        'representatives': ['郝大通', '郝太古']
+      },
+      {
+        'name': '清静派',
+        'dynasty': '元代',
+        'practice': '内丹、清修',
+        'description': '清静派是全真派的重要支派，由孙不二创立，强调清静无为的修炼方法，是唯一的女性创始人。',
+        'info': {
+          '修行方式': '内丹修炼、清修戒律、清静无为',
+          '理念': '清静修道、清静无为、修道成仙',
+          '经典': '《孙不二元君法语》',
+          '圣地': '宁海'
+        },
+        'representatives': ['孙不二', '孙清静']
+      },
+      {
+        'name': '正一道',
+        'dynasty': '明代',
+        'practice': '符箓、斋醮',
+        'description': '正一道是道教的主要派别之一，由张道陵后裔传承，注重符箓法术和斋醮科仪。',
+        'info': {
+          '修行方式': '符箓驱邪、斋醮科仪、守戒积善',
+          '理念': '道即太上老君、长生久视、济世度人',
+          '经典': '《道德经》、《正一经》、《正统道藏》',
           '圣地': '龙虎山'
         },
         'representatives': ['张正常', '张宇初', '张继禹']
       },
       {
-        'name': '青城派',
-        'dynasty': '清',
+        'name': '三丰派',
+        'dynasty': '明代',
+        'practice': '内丹、武术',
+        'description': '三丰派是道教的重要派别之一，由张三丰创立，融合文始、少阳二派，主张性命双修。',
+        'info': {
+          '修行方式': '内丹修炼、武术、性命双修',
+          '理念': '三教合一、性命双修、修道成仙',
+          '经典': '《张三丰全集》',
+          '圣地': '武当山'
+        },
+        'representatives': ['张三丰', '张邋遢']
+      },
+      {
+        'name': '伍柳派',
+        'dynasty': '清代',
         'practice': '内丹',
+        'description': '伍柳派是道教的重要派别之一，由伍冲虚和柳华阳创立，简化丹道修炼法门。',
+        'info': {
+          '修行方式': '内丹修炼、性命双修、简化丹法',
+          '理念': '内丹简化、性命双修、修道成仙',
+          '经典': '《伍柳仙宗》',
+          '圣地': '江西南昌'
+        },
+        'representatives': ['伍冲虚', '柳华阳']
+      },
+      {
+        'name': '千峰派',
+        'dynasty': '清代',
+        'practice': '内丹',
+        'description': '千峰派是道教的重要派别之一，由赵避尘创立，改丹道单传为普传。',
+        'info': {
+          '修行方式': '内丹修炼、性命双修、丹道普传',
+          '理念': '丹道普传、性命双修、修道成仙',
+          '经典': '《性命法诀明指》',
+          '圣地': '北京'
+        },
+        'representatives': ['赵避尘', '赵千峰']
+      },
+      {
+        'name': '青城派',
+        'dynasty': '清代',
+        'practice': '内丹、武术',
         'description': '青城派是道教的重要派别之一，以青城山为圣地，注重内丹修炼和武术。',
         'info': {
-          '修行方式': '内丹修炼、武术',
-          '理念': '青城仙道、内外兼修',
+          '修行方式': '内丹修炼、武术、内外兼修',
+          '理念': '青城仙道、内外兼修、修道成仙',
           '经典': '《青城秘录》',
           '圣地': '青城山'
         },
@@ -1048,8 +1627,14 @@ class DatabaseService {
   Future<Map<String, dynamic>?> getFigureByName(String name) async {
     if (kIsWeb) {
       // 在web平台上使用内存存储
-      final figure = _webFigures.firstWhere((f) => f['name'] == name, orElse: () => {});
-      if (figure.isEmpty) return null;
+      if (!_webDataInitialized) {
+        _initializeWebData();
+      }
+      final originalFigure = _webFigures.firstWhere((f) => f['name'] == name, orElse: () => {});
+      if (originalFigure.isEmpty) return null;
+      
+      // 创建可修改的副本
+      final figure = Map<String, dynamic>.from(originalFigure);
       
       // 获取核心思想
       final thoughts = _webFigureThoughts.where((t) => t['figure_id'] == figure['id']).map((t) => t['thought']).toList();
@@ -1065,7 +1650,8 @@ class DatabaseService {
     final result = await db.query('figures', where: 'name = ?', whereArgs: [name]);
     if (result.isEmpty) return null;
     
-    final figure = result.first;
+    final originalFigure = result.first;
+    final figure = Map<String, dynamic>.from(originalFigure);
     // 获取核心思想
     final thoughts = await db.query('figure_thoughts', where: 'figure_id = ?', whereArgs: [figure['id']]);
     figure['coreThoughts'] = thoughts.map((t) => t['thought']).toList();
@@ -1079,7 +1665,10 @@ class DatabaseService {
   Future<List<Map<String, dynamic>>> getAllFigures() async {
     if (kIsWeb) {
       // 在web平台上使用内存存储
-      final figures = List<Map<String, dynamic>>.from(_webFigures);
+      if (!_webDataInitialized) {
+        _initializeWebData();
+      }
+      final figures = _webFigures.map((f) => Map<String, dynamic>.from(f)).toList();
       
       for (var figure in figures) {
         // 获取核心思想
@@ -1097,7 +1686,8 @@ class DatabaseService {
     }
     
     final db = await database;
-    final figures = await db.query('figures', orderBy: 'era_order ASC');
+    final originalFigures = await db.query('figures', orderBy: 'era_order ASC');
+    final figures = originalFigures.map((f) => Map<String, dynamic>.from(f)).toList();
     
     for (var figure in figures) {
       // 获取核心思想
@@ -1115,12 +1705,15 @@ class DatabaseService {
     if (kIsWeb) {
       // 在web平台上使用内存存储
       // 检查人物是否存在
-      final existingFigure = _webFigures.firstWhere((f) => f['name'] == name, orElse: () => {});
+      final existingIndex = _webFigures.indexWhere((f) => f['name'] == name);
       int figureId;
       
-      if (existingFigure.isNotEmpty) {
+      if (existingIndex >= 0) {
         // 更新现有人物
-        existingFigure['bio'] = bio;
+        final existingFigure = _webFigures[existingIndex];
+        final updatedFigure = Map<String, dynamic>.from(existingFigure);
+        updatedFigure['bio'] = bio;
+        _webFigures[existingIndex] = updatedFigure;
         figureId = existingFigure['id'] as int;
         
         // 删除旧的核心思想和著作
@@ -1211,7 +1804,10 @@ class DatabaseService {
   Future<List<Map<String, dynamic>>> getAllSects() async {
     if (kIsWeb) {
       // 在web平台上使用内存存储
-      final sects = List<Map<String, dynamic>>.from(_webSects);
+      if (!_webDataInitialized) {
+        _initializeWebData();
+      }
+      final sects = _webSects.map((s) => Map<String, dynamic>.from(s)).toList();
       
       for (var sect in sects) {
         // 获取派系信息
@@ -1231,7 +1827,8 @@ class DatabaseService {
     }
     
     final db = await database;
-    final sects = await db.query('sects', orderBy: 'id ASC');
+    final originalSects = await db.query('sects', orderBy: 'id ASC');
+    final sects = originalSects.map((s) => Map<String, dynamic>.from(s)).toList();
     
     for (var sect in sects) {
       // 获取派系信息
@@ -1253,8 +1850,14 @@ class DatabaseService {
   Future<Map<String, dynamic>?> getSectById(int id) async {
     if (kIsWeb) {
       // 在web平台上使用内存存储
-      final sect = _webSects.firstWhere((s) => s['id'] == id, orElse: () => {});
-      if (sect.isEmpty) return null;
+      if (!_webDataInitialized) {
+        _initializeWebData();
+      }
+      final originalSect = _webSects.firstWhere((s) => s['id'] == id, orElse: () => {});
+      if (originalSect.isEmpty) return null;
+      
+      // 创建可修改的副本
+      final sect = Map<String, dynamic>.from(originalSect);
       
       // 获取派系信息
       final info = _webSectInfo.where((i) => i['sect_id'] == sect['id']).toList();
@@ -1275,7 +1878,8 @@ class DatabaseService {
     final result = await db.query('sects', where: 'id = ?', whereArgs: [id]);
     if (result.isEmpty) return null;
     
-    final sect = result.first;
+    final originalSect = result.first;
+    final sect = Map<String, dynamic>.from(originalSect);
     // 获取派系信息
     final info = await db.query('sect_info', where: 'sect_id = ?', whereArgs: [sect['id']]);
     final infoMap = <String, String>{};
