@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/screens/figure_screen.dart';
 import 'package:dao_app/utils/ai_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'package:dao_app/services/database_service.dart';
 
 class SectScreen extends StatefulWidget {
   const SectScreen({super.key});
@@ -36,199 +35,24 @@ class _SectScreenState extends State<SectScreen> {
     _loadSects();
   }
 
-  // 从本地存储加载派系数据
+  // 从数据库加载派系数据
   Future<void> _loadSects() async {
     setState(() {
       isLoading = true;
     });
     
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final sectsJson = prefs.getString('sects');
-      if (sectsJson != null) {
-        // 从本地存储加载数据
-        final List<dynamic> sectsList = jsonDecode(sectsJson);
-        sects = List<Map<String, dynamic>>.from(sectsList);
-      } else {
-        // 初始化默认数据
-        sects = [
-          {
-            'id': '1',
-            'name': '正一道',
-            'dynasty': '东汉',
-            'practice': '符箓',
-            'description': '正一道是道教的主要派别之一，由张道陵创立于东汉末年。注重符箓法术，强调通过仪式和法术来达到修仙的目的。',
-            'info': {
-              '修行方式': '符箓、斋醮、科仪',
-              '理念': '驱邪避凶、祈福禳灾',
-              '经典': '《道德经》、《太平经》',
-              '圣地': '龙虎山、青城山'
-            },
-            'representatives': ['张道陵', '张衡', '张鲁']
-          },
-          {
-            'id': '2',
-            'name': '上清派',
-            'dynasty': '魏晋',
-            'practice': '存思',
-            'description': '上清派是道教的重要派别之一，以《上清经》为主要经典，强调存思守一的修炼方法。由魏华存创立。',
-            'info': {
-              '修行方式': '存思、服气、内丹',
-              '理念': '上清道妙、存思成仙',
-              '经典': '《上清大洞真经》',
-              '圣地': '茅山、天台山'
-            },
-            'representatives': ['魏华存', '杨羲', '许谧']
-          },
-          {
-            'id': '3',
-            'name': '灵宝派',
-            'dynasty': '魏晋',
-            'practice': '斋醮',
-            'description': '灵宝派是道教的重要派别之一，以《灵宝经》为主要经典，强调斋醮科仪的重要性。由葛玄创立。',
-            'info': {
-              '修行方式': '斋醮、符箓、诵经',
-              '理念': '超度亡灵、积累功德',
-              '经典': '《灵宝无量度人上品妙经》',
-              '圣地': '阁皂山'
-            },
-            'representatives': ['葛玄', '葛洪', '陆修静']
-          },
-          {
-            'id': '4',
-            'name': '茅山派',
-            'dynasty': '隋唐',
-            'practice': '符箓',
-            'description': '茅山派是道教的重要派别之一，以茅山为圣地，注重符箓法术和内丹修炼。由陶弘景发展壮大。',
-            'info': {
-              '修行方式': '符箓、内丹、斋醮',
-              '理念': '济世度人、修道成仙',
-              '经典': '《真诰》、《登真隐诀》',
-              '圣地': '茅山'
-            },
-            'representatives': ['陶弘景', '司马承祯', '吴筠']
-          },
-          {
-            'id': '5',
-            'name': '全真派',
-            'dynasty': '北宋',
-            'practice': '清修',
-            'description': '全真派是道教的重要派别之一，由王重阳创立，主张性命双修，强调内心的修炼和精神的超越。',
-            'info': {
-              '修行方式': '内丹修炼、清修、戒律',
-              '理念': '全真而仙、三教合一',
-              '经典': '《道德经》、《清静经》',
-              '圣地': '终南山、昆嵛山'
-            },
-            'representatives': ['王重阳', '丘处机', '马钰']
-          },
-          {
-            'id': '6',
-            'name': '净明道',
-            'dynasty': '南宋',
-            'practice': '忠孝',
-            'description': '净明道是道教的重要派别之一，强调忠孝伦理，融合儒家思想与道教修炼。由许逊创立。',
-            'info': {
-              '修行方式': '忠孝伦理、内丹修炼',
-              '理念': '净明忠孝、仙道合一',
-              '经典': '《净明忠孝全书》',
-              '圣地': '西山万寿宫'
-            },
-            'representatives': ['许逊', '刘玉', '黄元吉']
-          },
-          {
-            'id': '7',
-            'name': '龙门派',
-            'dynasty': '元',
-            'practice': '清修',
-            'description': '龙门派是全真派的重要支派，由丘处机创立，强调严格的清修戒律和内丹修炼。',
-            'info': {
-              '修行方式': '内丹修炼、清修戒律',
-              '理念': '龙门心法、全真传承',
-              '经典': '《邱祖全书》',
-              '圣地': '白云观、崂山'
-            },
-            'representatives': ['丘处机', '尹志平', '李志常']
-          },
-          {
-            'id': '8',
-            'name': '正一派',
-            'dynasty': '明',
-            'practice': '符箓',
-            'description': '正一派是道教的主要派别之一，由张道陵后裔传承，注重符箓法术和斋醮科仪。',
-            'info': {
-              '修行方式': '符箓、斋醮、科仪',
-              '理念': '驱邪避凶、祈福禳灾',
-              '经典': '《正统道藏》',
-              '圣地': '龙虎山'
-            },
-            'representatives': ['张正常', '张宇初', '张继禹']
-          },
-          {
-            'id': '9',
-            'name': '青城派',
-            'dynasty': '清',
-            'practice': '内丹',
-            'description': '青城派是道教的重要派别之一，以青城山为圣地，注重内丹修炼和武术。',
-            'info': {
-              '修行方式': '内丹修炼、武术',
-              '理念': '青城仙道、内外兼修',
-              '经典': '《青城秘录》',
-              '圣地': '青城山'
-            },
-            'representatives': ['杜光庭', '陈清觉', '刘沅']
-          },
-        ];
-        // 保存到本地存储
-        await _saveSects();
-      }
+      // 从数据库加载派系数据
+      sects = await DatabaseService().getAllSects();
       // 按朝代排序
       _sortSectsByDynasty();
     } catch (e) {
       print('加载派系数据失败: $e');
-      // 加载失败时使用默认数据
-      sects = [
-        {
-          'id': '1',
-          'name': '正一道',
-          'dynasty': '东汉',
-          'practice': '符箓',
-          'description': '正一道是道教的主要派别之一，注重符箓法术，强调通过仪式和法术来达到修仙的目的。',
-          'info': {
-            '修行方式': '符箓、斋醮',
-            '理念': '驱邪避凶、祈福禳灾',
-          },
-          'representatives': ['张道陵', '张衡', '张鲁']
-        },
-        {
-          'id': '2',
-          'name': '全真派',
-          'dynasty': '北宋',
-          'practice': '清修',
-          'description': '全真派是道教的重要派别之一，主张性命双修，强调内心的修炼和精神的超越。',
-          'info': {
-            '修行方式': '内丹修炼、清修',
-            '理念': '全真而仙',
-          },
-          'representatives': ['王重阳', '丘处机', '马钰']
-        },
-      ];
-      _sortSectsByDynasty();
+      sects = [];
     } finally {
       setState(() {
         isLoading = false;
       });
-    }
-  }
-
-  // 保存派系数据到本地存储
-  Future<void> _saveSects() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final sectsJson = jsonEncode(sects);
-      await prefs.setString('sects', sectsJson);
-    } catch (e) {
-      print('保存派系数据失败: $e');
     }
   }
 
@@ -279,8 +103,8 @@ class _SectScreenState extends State<SectScreen> {
     // 调用大模型API查询人物信息
     Map<String, dynamic> figureInfo = await AIService.getFigureInfo(name);
     
-    // 保存人物信息到本地存储
-    await _saveFigureInfo(name, figureInfo['bio'], figureInfo['coreThoughts'], figureInfo['works']);
+    // 保存人物信息到数据库
+    await DatabaseService().saveFigureWithDetails(name, figureInfo['bio'], figureInfo['coreThoughts'], figureInfo['works']);
     
     // 直接显示人物详情
     _showFigureDetail({
@@ -290,56 +114,6 @@ class _SectScreenState extends State<SectScreen> {
       'coreThoughts': figureInfo['coreThoughts'],
       'works': figureInfo['works']
     });
-  }
-
-  // 保存人物信息到本地存储
-  Future<void> _saveFigureInfo(String name, String bio, List<dynamic> coreThoughts, List<dynamic> works) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final figuresJson = prefs.getString('figures');
-      
-      // 只有当本地存储已有数据时才保存，否则不保存
-      // 这样就不会覆盖人物篇的默认数据
-      if (figuresJson != null) {
-        // 从本地存储加载数据
-        final List<dynamic> figuresList = jsonDecode(figuresJson);
-        List<Map<String, dynamic>> figures = List<Map<String, dynamic>>.from(figuresList);
-        
-        // 检查是否已存在该人物
-        int existingIndex = figures.indexWhere((fig) => fig['name'] == name);
-        if (existingIndex >= 0) {
-          // 更新现有人物信息
-          figures[existingIndex]['bio'] = bio;
-          figures[existingIndex]['coreThoughts'] = coreThoughts;
-          figures[existingIndex]['works'] = works;
-        } else {
-          // 添加新人物
-          figures.add({
-            'id': (figures.length + 1).toString(),
-            'name': name,
-            'era': '',
-            'eraOrder': 999,
-            'description': '',
-            'bio': bio,
-            'coreThoughts': coreThoughts,
-            'works': works
-          });
-        }
-        
-        // 按朝代排序
-        figures.sort((a, b) {
-          int orderA = a['eraOrder'] ?? 999;
-          int orderB = b['eraOrder'] ?? 999;
-          return orderA.compareTo(orderB);
-        });
-        
-        // 保存到本地存储
-        await prefs.setString('figures', jsonEncode(figures));
-      }
-      // 如果本地存储没有数据，不保存，等人物篇加载默认数据后再更新
-    } catch (e) {
-      print('保存人物信息失败: $e');
-    }
   }
 
   void _showSectDetail(Map<String, dynamic> sect) {

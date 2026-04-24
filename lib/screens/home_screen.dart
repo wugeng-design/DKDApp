@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/screens/photo_quote_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dao_app/services/database_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,24 +22,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   bool _hasError = false;
   String _errorMessage = '';
   String _explanationStyle = 'default'; // default, concise, detailed, modern
-  List<String> daoQuotes = [];
   bool _hasFetchedExtraQuotes = false;
-  SharedPreferences? _prefs;
   File? _selectedImage; // 存储选择的照片
-
-  // 初始10条道家名言
-  final List<String> defaultDaoQuotes = [
-    '道可道，非常道；名可名，非常名。无名天地之始，有名万物之母。',
-    '天下皆知美之为美，斯恶已；皆知善之为善，斯不善已。',
-    '有无相生，难易相成，长短相较，高下相倾，音声相和，前后相随。',
-    '是以圣人处无为之事，行不言之教。',
-    '万物作焉而不辞，生而不有，为而不恃，功成而弗居。',
-    '夫唯弗居，是以不去。',
-    '不尚贤，使民不争；不贵难得之货，使民不为盗；不见可欲，使民心不乱。',
-    '是以圣人之治，虚其心，实其腹，弱其志，强其骨。',
-    '常使民无知无欲，使夫智者不敢为也。为无为，则无不治。',
-    '道冲，而用之或不盈。渊兮，似万物之宗。'
-  ];
 
   // 动画控制器
   late AnimationController _refreshController;
@@ -67,34 +51,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   // 初始化名言数据
   Future<void> _initQuotes() async {
-    _prefs = await SharedPreferences.getInstance();
-    final storedQuotes = _prefs?.getStringList('daoQuotes');
-    
-    if (storedQuotes == null || storedQuotes.isEmpty) {
-      // 首次使用，存储默认名言
-      await _prefs?.setStringList('daoQuotes', defaultDaoQuotes);
-      daoQuotes = defaultDaoQuotes;
-    } else {
-      daoQuotes = storedQuotes;
-    }
-    
-    // 随机选择一条名言作为今日一言
-    _randomQuote();
+    // 从数据库获取随机名言
+    await _randomQuote();
   }
 
   // 随机选择一条名言
-  void _randomQuote() {
-    if (daoQuotes.isNotEmpty) {
-      final randomIndex = Random().nextInt(daoQuotes.length);
-      setState(() {
-        todayQuote = daoQuotes[randomIndex];
-      });
+  Future<void> _randomQuote() async {
+    try {
+      final quote = await DatabaseService().getRandomQuote();
+      if (quote != null) {
+        setState(() {
+          todayQuote = quote['content'] as String;
+        });
+      }
+    } catch (e) {
+      print('获取随机名言失败: $e');
     }
-  }
-
-  // 保存名言到本地存储
-  Future<void> _saveQuotes() async {
-    await _prefs?.setStringList('daoQuotes', daoQuotes);
   }
 
   // 请求大模型补充名言
@@ -115,9 +87,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         '非以其无私邪？故能成其私。'
       ];
       
-      // 添加到现有名言列表
-      daoQuotes.addAll(extraQuotes);
-      await _saveQuotes();
+      // 添加到数据库
+      final dbService = DatabaseService();
+      for (var quote in extraQuotes) {
+        await dbService.insertQuote(quote);
+      }
       _hasFetchedExtraQuotes = true;
     } catch (e) {
       print('获取额外名言失败: $e');
@@ -138,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       await _fetchExtraQuotes();
     }
     // 随机选择一条名言
-    _randomQuote();
+    await _randomQuote();
   }
 
   // 构建刷新按钮
