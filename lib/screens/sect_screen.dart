@@ -297,45 +297,46 @@ class _SectScreenState extends State<SectScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final figuresJson = prefs.getString('figures');
-      List<Map<String, dynamic>> figures;
       
+      // 只有当本地存储已有数据时才保存，否则不保存
+      // 这样就不会覆盖人物篇的默认数据
       if (figuresJson != null) {
+        // 从本地存储加载数据
         final List<dynamic> figuresList = jsonDecode(figuresJson);
-        figures = List<Map<String, dynamic>>.from(figuresList);
-      } else {
-        figures = [];
-      }
-      
-      // 检查是否已存在该人物
-      int existingIndex = figures.indexWhere((fig) => fig['name'] == name);
-      if (existingIndex >= 0) {
-        // 更新现有人物信息
-        figures[existingIndex]['bio'] = bio;
-        figures[existingIndex]['coreThoughts'] = coreThoughts;
-        figures[existingIndex]['works'] = works;
-      } else {
-        // 添加新人物
-        figures.add({
-          'id': (figures.length + 1).toString(),
-          'name': name,
-          'era': '',
-          'eraOrder': 999,
-          'description': '',
-          'bio': bio,
-          'coreThoughts': coreThoughts,
-          'works': works
+        List<Map<String, dynamic>> figures = List<Map<String, dynamic>>.from(figuresList);
+        
+        // 检查是否已存在该人物
+        int existingIndex = figures.indexWhere((fig) => fig['name'] == name);
+        if (existingIndex >= 0) {
+          // 更新现有人物信息
+          figures[existingIndex]['bio'] = bio;
+          figures[existingIndex]['coreThoughts'] = coreThoughts;
+          figures[existingIndex]['works'] = works;
+        } else {
+          // 添加新人物
+          figures.add({
+            'id': (figures.length + 1).toString(),
+            'name': name,
+            'era': '',
+            'eraOrder': 999,
+            'description': '',
+            'bio': bio,
+            'coreThoughts': coreThoughts,
+            'works': works
+          });
+        }
+        
+        // 按朝代排序
+        figures.sort((a, b) {
+          int orderA = a['eraOrder'] ?? 999;
+          int orderB = b['eraOrder'] ?? 999;
+          return orderA.compareTo(orderB);
         });
+        
+        // 保存到本地存储
+        await prefs.setString('figures', jsonEncode(figures));
       }
-      
-      // 按朝代排序
-      figures.sort((a, b) {
-        int orderA = a['eraOrder'] ?? 999;
-        int orderB = b['eraOrder'] ?? 999;
-        return orderA.compareTo(orderB);
-      });
-      
-      // 保存到本地存储
-      await prefs.setString('figures', jsonEncode(figures));
+      // 如果本地存储没有数据，不保存，等人物篇加载默认数据后再更新
     } catch (e) {
       print('保存人物信息失败: $e');
     }
