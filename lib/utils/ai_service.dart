@@ -112,7 +112,7 @@ class AIService {
       // 实际项目中，这里应该将图片转换为base64并发送到API
       // 暂时使用模拟数据
       await Future.delayed(const Duration(seconds: 1)); // 模拟网络延迟
-      
+
       // 模拟生成的道家真言
       final quotes = [
         '天地与我并生，而万物与我为一。',
@@ -126,13 +126,49 @@ class AIService {
         '上善若水，水善利万物而不争。',
         '飘风不终朝，骤雨不终日。'
       ];
-      
+
       // 随机选择一条名言
       final random = Random();
       return quotes[random.nextInt(quotes.length)];
     } catch (e) {
       // 如果API调用失败，返回默认名言
       return '道可道，非常道；名可名，非常名。';
+    }
+  }
+
+  // 聊天功能
+  static Future<String> chat(String message) async {
+    try {
+      final prompt = '你是一个精通道教文化的AI助手，名叫道小来。请用简洁、有趣的方式回答用户的问题。如果问题与道教文化无关，请礼貌地引导回到道教话题。\n\n用户问题：$message';
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey'
+        },
+        body: jsonEncode({
+          'model': model,
+          'messages': [
+            {
+              'role': 'user',
+              'content': prompt
+            }
+          ],
+          'temperature': 0.7,
+          'max_tokens': 1000
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['choices'][0]['message']['content'];
+      } else {
+        throw Exception('API request failed: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('聊天失败: $e');
+      return '抱歉，我暂时无法回答这个问题，请稍后重试。';
     }
   }
 }

@@ -7,6 +7,18 @@ import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/screens/photo_quote_screen.dart';
 import 'package:dao_app/services/database_service.dart';
 
+class ChatMessage {
+  final String content;
+  final bool isUser;
+  final DateTime timestamp;
+
+  ChatMessage({
+    required this.content,
+    required this.isUser,
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now();
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -24,6 +36,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   String _explanationStyle = 'default'; // default, concise, detailed, modern
   bool _hasFetchedExtraQuotes = false;
   File? _selectedImage; // 存储选择的照片
+
+  List<ChatMessage> _chatMessages = [];
+  final TextEditingController _chatController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  bool _isChatLoading = false;
 
   // 动画控制器
   late AnimationController _refreshController;
@@ -46,7 +63,52 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void dispose() {
     _refreshController.dispose();
+    _chatController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _sendChatMessage() async {
+    final text = _chatController.text.trim();
+    if (text.isEmpty || _isChatLoading) return;
+
+    setState(() {
+      _chatMessages.add(ChatMessage(content: text, isUser: true));
+      _isChatLoading = true;
+    });
+    _chatController.clear();
+
+    _scrollToBottom();
+
+    try {
+      final response = await AIService.chat(text);
+      setState(() {
+        _chatMessages.add(ChatMessage(content: response, isUser: false));
+        _isChatLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _chatMessages.add(ChatMessage(
+          content: '抱歉，发生了错误，请稍后重试。',
+          isUser: false,
+        ));
+        _isChatLoading = false;
+      });
+    }
+
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   // 初始化名言数据
@@ -159,18 +221,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       });
     }
   }
-
-  final List<Map<String, String>> recommendedFigures = [
-    {'name': '老子', 'era': '春秋', 'description': '道家创始人'},
-    {'name': '庄子', 'era': '战国', 'description': '道家代表人物'},
-    {'name': '列子', 'era': '战国', 'description': '道家思想家'},
-  ];
-
-  final List<Map<String, String>> recommendedThoughts = [
-    {'name': '道', 'description': '宇宙万物的本原'},
-    {'name': '无为', 'description': '顺应自然的处世方式'},
-    {'name': '阴阳', 'description': '对立统一的哲学概念'},
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -446,82 +496,209 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             if (_showAIExplanation && !_hasError) const SizedBox(height: 24.0),
 
-            // 推荐人物
-            const Text('推荐人物', style: AppTheme.subtitleStyle),
+            // AI对话区域
+            const Text('AI对话', style: AppTheme.subtitleStyle),
             const SizedBox(height: 16.0),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16.0,
-                mainAxisSpacing: 16.0,
-                childAspectRatio: 1.4,
+            Container(
+              height: 400,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                border: Border.all(color: Colors.grey[300]!),
               ),
-              itemCount: recommendedFigures.length,
-              itemBuilder: (context, index) {
-                final figure = recommendedFigures[index];
-                return Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: _chatMessages.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.auto_awesome,
+                                  size: 48,
+                                  color: AppTheme.accentColor.withOpacity(0.5),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  '向我提问吧',
+                                  style: AppTheme.bodyStyle.copyWith(
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '我可以解答关于道教文化的问题',
+                                  style: AppTheme.captionStyle,
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _chatMessages.length + (_isChatLoading ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == _chatMessages.length && _isChatLoading) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  child: Row(
+                                    children: [
+                                      const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppTheme.accentColor,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        '道小来正在思考...',
+                                        style: AppTheme.captionStyle,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              final message = _chatMessages[index];
+                              return _buildChatBubble(message);
+                            },
+                          ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.cardPadding),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children:
-                        [
-                        Text(figure['name']!, style: AppTheme.subtitleStyle),
-                        const SizedBox(height: 4.0),
-                        Text(figure['era']!, style: AppTheme.captionStyle),
-                        const SizedBox(height: 4.0),
-                        Text(figure['description']!, style: AppTheme.captionStyle),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(AppTheme.borderRadius),
+                        bottomRight: Radius.circular(AppTheme.borderRadius),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -2),
+                        ),
                       ],
                     ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 32.0),
-
-            // 推荐思想
-            const Text('推荐思想', style: AppTheme.subtitleStyle),
-            const SizedBox(height: 16.0),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16.0,
-                mainAxisSpacing: 16.0,
-                childAspectRatio: 1.8,
-              ),
-              itemCount: recommendedThoughts.length,
-              itemBuilder: (context, index) {
-                final thought = recommendedThoughts[index];
-                return Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.cardPadding),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(thought['name']!, style: AppTheme.subtitleStyle),
-                        const SizedBox(height: 4.0),
-                        Text(thought['description']!, style: AppTheme.captionStyle),
+                        Expanded(
+                          child: TextField(
+                            controller: _chatController,
+                            decoration: InputDecoration(
+                              hintText: '输入你的问题...',
+                              hintStyle: AppTheme.captionStyle,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[100],
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                            textInputAction: TextInputAction.send,
+                            onSubmitted: (_) => _sendChatMessage(),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: _isChatLoading ? null : _sendChatMessage,
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: _isChatLoading ? Colors.grey : AppTheme.accentColor,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Icon(
+                              Icons.send,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
             const SizedBox(height: 40.0),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildChatBubble(ChatMessage message) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment:
+            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!message.isUser) ...[
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: AppTheme.accentColor,
+              child: const Text(
+                '道',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: message.isUser ? AppTheme.accentColor : Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(16),
+                  topRight: const Radius.circular(16),
+                  bottomLeft: Radius.circular(message.isUser ? 16 : 4),
+                  bottomRight: Radius.circular(message.isUser ? 4 : 16),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                message.content,
+                style: TextStyle(
+                  color: message.isUser ? Colors.white : AppTheme.textColor,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ),
+          if (message.isUser) ...[
+            const SizedBox(width: 8),
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: AppTheme.primaryColor,
+              child: const Icon(
+                Icons.person,
+                size: 18,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
