@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/services/user_provider.dart';
@@ -17,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isRegisterMode = false;
   bool _isSendingCode = false;
   int _countdown = 0;
+  Timer? _countdownTimer;
   late UserProvider _userProvider;
 
   @override
@@ -27,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _phoneController.dispose();
     _codeController.dispose();
     _nicknameController.dispose();
@@ -34,21 +37,28 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _startCountdown() {
+    _countdownTimer?.cancel();
     setState(() {
       _countdown = 60;
       _isSendingCode = true;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       if (_countdown > 0) {
         setState(() {
           _countdown--;
         });
-        _startCountdown();
       } else {
-        setState(() {
-          _isSendingCode = false;
-        });
+        timer.cancel();
+        if (mounted) {
+          setState(() {
+            _isSendingCode = false;
+          });
+        }
       }
     });
   }
@@ -85,7 +95,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final success = await _userProvider.loginWithPhone(phone, code);
     if (success) {
-      Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+      }
     } else {
       _showSnackBar('登录失败，请检查验证码是否正确');
     }
@@ -113,7 +125,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final success = await _userProvider.registerWithPhone(phone, code, nickname);
     if (success) {
-      Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+      }
     } else {
       _showSnackBar('注册失败，请重试');
     }
@@ -239,8 +253,8 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _userProvider.isLoading 
-                    ? null 
+                onPressed: _userProvider.isLoading
+                    ? null
                     : (_isRegisterMode ? _register : _login),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -278,8 +292,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 });
               },
               child: Text(
-                _isRegisterMode 
-                    ? '已有账号？去登录' 
+                _isRegisterMode
+                    ? '已有账号？去登录'
                     : '还没有账号？去注册',
                 style: TextStyle(
                   color: AppTheme.accentColor,
