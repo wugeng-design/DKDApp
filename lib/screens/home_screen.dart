@@ -111,6 +111,47 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
   }
 
+  // 为聊天选择图片
+  Future<void> _selectImageForChat() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PhotoQuoteScreen()),
+    );
+    if (result != null && result is File) {
+      // 直接发送图片消息
+      _sendImageMessage(result);
+    }
+  }
+
+  // 发送图片消息
+  Future<void> _sendImageMessage(File image) async {
+    setState(() {
+      _chatMessages.add(ChatMessage(content: 'image', isUser: true));
+      _isChatLoading = true;
+    });
+
+    _scrollToBottom();
+
+    try {
+      // 调用AI服务处理图片
+      final response = await AIService.chatWithImage(image);
+      setState(() {
+        _chatMessages.add(ChatMessage(content: response, isUser: false));
+        _isChatLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _chatMessages.add(ChatMessage(
+          content: '抱歉，处理图片时发生了错误，请稍后重试。',
+          isUser: false,
+        ));
+        _isChatLoading = false;
+      });
+    }
+
+    _scrollToBottom();
+  }
+
   // 初始化名言数据
   Future<void> _initQuotes() async {
     // 从数据库获取随机名言
@@ -584,6 +625,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                     child: Row(
                       children: [
+                        // 图片选择按钮
+                        GestureDetector(
+                          onTap: _isChatLoading ? null : _selectImageForChat,
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Icon(
+                              Icons.image,
+                              color: AppTheme.accentColor,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: TextField(
                             controller: _chatController,
@@ -659,32 +718,79 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             const SizedBox(width: 8),
           ],
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: message.isUser ? AppTheme.accentColor : Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(message.isUser ? 16 : 4),
-                  bottomRight: Radius.circular(message.isUser ? 4 : 16),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
+            child: message.content == 'image' && message.isUser
+                ? Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(16),
+                        topRight: const Radius.circular(16),
+                        bottomLeft: const Radius.circular(16),
+                        bottomRight: const Radius.circular(4),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white.withOpacity(0.2),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.image,
+                              color: Colors.white,
+                              size: 48,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '图片已发送',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: message.isUser ? AppTheme.accentColor : Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(16),
+                        topRight: const Radius.circular(16),
+                        bottomLeft: Radius.circular(message.isUser ? 16 : 4),
+                        bottomRight: Radius.circular(message.isUser ? 4 : 16),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      message.content,
+                      style: TextStyle(
+                        color: message.isUser ? Colors.white : AppTheme.textColor,
+                        fontSize: 15,
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              child: Text(
-                message.content,
-                style: TextStyle(
-                  color: message.isUser ? Colors.white : AppTheme.textColor,
-                  fontSize: 15,
-                ),
-              ),
-            ),
           ),
           if (message.isUser) ...[
             const SizedBox(width: 8),
