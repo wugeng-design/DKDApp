@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/screens/home_screen.dart';
 import 'package:dao_app/screens/thought_screen.dart';
 import 'package:dao_app/screens/figure_screen.dart';
 import 'package:dao_app/screens/sect_screen.dart';
 import 'package:dao_app/screens/search_screen.dart';
+import 'package:dao_app/screens/login_screen.dart';
+import 'package:dao_app/screens/settings_screen.dart';
+import 'package:dao_app/services/user_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => UserProvider()..initUser(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -44,7 +53,36 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dao · 道'),
+        centerTitle: true,
+        backgroundColor: AppTheme.backgroundColor,
+        elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {
+              if (userProvider.isLoggedIn) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              }
+            },
+            icon: Icon(
+              userProvider.isLoggedIn ? Icons.settings : Icons.person,
+              color: AppTheme.textColor,
+            ),
+          ),
+        ],
+      ),
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
