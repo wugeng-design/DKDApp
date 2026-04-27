@@ -27,8 +27,56 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Dao · 道',
       theme: AppTheme.themeData,
-      home: const MainScreen(),
       debugShowCheckedModeBanner: false,
+      home: const AuthWrapper(),
+    );
+  }
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuth();
+    });
+  }
+
+  Future<void> _checkAuth() async {
+    if (_isInitialized) return;
+    _isInitialized = true;
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.initUser();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, _) {
+        if (!_isInitialized || userProvider.isLoading) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (userProvider.isLoggedIn) {
+          return const MainScreen();
+        } else {
+          return const LoginScreen();
+        }
+      },
     );
   }
 }
@@ -42,7 +90,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  bool _hasCheckedLogin = false;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -51,29 +98,6 @@ class _MainScreenState extends State<MainScreen> {
     const SectScreen(),
     const SearchScreen(),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkLoginStatus();
-    });
-  }
-
-  void _checkLoginStatus() async {
-    if (_hasCheckedLogin) return;
-    _hasCheckedLogin = true;
-
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    await userProvider.initUser();
-
-    if (!userProvider.isLoggedIn && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,20 +112,13 @@ class _MainScreenState extends State<MainScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              if (userProvider.isLoggedIn) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
             },
             icon: Icon(
-              userProvider.isLoggedIn ? Icons.settings : Icons.person,
+              Icons.settings,
               color: AppTheme.textColor,
             ),
           ),
