@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/services/user_provider.dart';
+import 'package:dao_app/screens/login_screen.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -22,19 +23,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _logout() async {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('退出登录'),
         content: const Text('确定要退出登录吗？'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('取消'),
           ),
           TextButton(
             onPressed: () async {
               await _userProvider.logout();
-              Navigator.pop(context);
-              Navigator.pop(context);
+              if (mounted) {
+                Navigator.pop(dialogContext);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
             },
             child: const Text('确定'),
           ),
