@@ -6,6 +6,7 @@ import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/screens/photo_quote_screen.dart';
 import 'package:dao_app/services/database_service.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class ChatMessage {
   final String content;
@@ -43,6 +44,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final TextEditingController _chatController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isChatLoading = false;
+  
+  // 语音识别相关
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  bool _isSpeechEnabled = false;
+  String _lastWords = '';
 
   // 动画控制器
   late AnimationController _refreshController;
@@ -52,6 +59,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _initQuotes();
+    // 初始化语音识别
+    _initSpeech();
     // 初始化动画控制器
     _refreshController = AnimationController(
       duration: const Duration(milliseconds: 500),
@@ -60,6 +69,78 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _refreshController, curve: Curves.easeInOut),
     );
+  }
+  
+  // 初始化语音识别
+  void _initSpeech() async {
+    _speech = stt.SpeechToText();
+    _isSpeechEnabled = await _speech.initialize();
+  }
+  
+  // 开始语音识别
+  void _startListening() async {
+    if (!_isSpeechEnabled) return;
+    
+    setState(() {
+      _isListening = true;
+      _lastWords = '';
+    });
+    
+    await _speech.listen(
+      onResult: (result) {
+        setState(() {
+          _lastWords = result.recognizedWords;
+        });
+        if (result.finalResult) {
+          setState(() {
+            _isListening = false;
+          });
+          // 语音识别完成后发送消息
+          if (_lastWords.isNotEmpty) {
+            _sendVoiceMessage(_lastWords);
+          }
+        }
+      },
+      localeId: 'zh_CN',
+    );
+  }
+  
+  // 停止语音识别
+  void _stopListening() async {
+    await _speech.stop();
+    setState(() {
+      _isListening = false;
+    });
+  }
+  
+  // 发送语音消息
+  void _sendVoiceMessage(String voiceText) async {
+    if (voiceText.isEmpty || _isChatLoading) return;
+    
+    setState(() {
+      _chatMessages.add(ChatMessage(content: voiceText, isUser: true));
+      _isChatLoading = true;
+    });
+    
+    _scrollToBottom();
+    
+    try {
+      final response = await AIService.chat(voiceText);
+      setState(() {
+        _chatMessages.add(ChatMessage(content: response, isUser: false));
+        _isChatLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _chatMessages.add(ChatMessage(
+          content: '抱歉，发生了错误，请稍后重试。',
+          isUser: false,
+        ));
+        _isChatLoading = false;
+      });
+    }
+    
+    _scrollToBottom();
   }
 
   @override
@@ -664,6 +745,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             ),
                             textInputAction: TextInputAction.send,
                             onSubmitted: (_) => _sendChatMessage(),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // 语音输入按钮
+                        GestureDetector(
+                          onTapDown: (_) => _startListening(),
+                          onTapUp: (_) => _stopListening(),
+                          onTapCancel: () => _stopListening(),
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: _isListening ? AppTheme.accentColor : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Icon(
+                              _isListening ? Icons.mic : Icons.mic_none,
+                              color: _isListening ? Colors.white : AppTheme.accentColor,
+                              size: 20,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
