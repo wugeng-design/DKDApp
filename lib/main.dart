@@ -61,23 +61,21 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<UserProvider>(
-      builder: (context, userProvider, _) {
-        if (!_isInitialized || userProvider.isLoading) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
+    final userProvider = Provider.of<UserProvider>(context);
 
-        if (userProvider.isLoggedIn) {
-          return const MainScreen();
-        } else {
-          return const LoginScreen();
-        }
-      },
-    );
+    if (!_isInitialized) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (userProvider.isLoggedIn) {
+      return const MainScreen();
+    } else {
+      return const LoginScreen();
+    }
   }
 }
 
