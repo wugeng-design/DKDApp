@@ -11,10 +11,12 @@ class ChatMessage {
   final String content;
   final bool isUser;
   final DateTime timestamp;
+  final File? image;
 
   ChatMessage({
     required this.content,
     required this.isUser,
+    this.image,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 }
@@ -126,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // 发送图片消息
   Future<void> _sendImageMessage(File image) async {
     setState(() {
-      _chatMessages.add(ChatMessage(content: 'image', isUser: true));
+      _chatMessages.add(ChatMessage(content: 'image', isUser: true, image: image));
       _isChatLoading = true;
     });
 
@@ -746,13 +748,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             borderRadius: BorderRadius.circular(8),
                             color: Colors.white.withOpacity(0.2),
                           ),
-                          child: Center(
-                            child: Icon(
-                              Icons.image,
-                              color: Colors.white,
-                              size: 48,
-                            ),
-                          ),
+                          child: message.image != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    message.image!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
+                                )
+                              : Center(
+                                  child: Icon(
+                                    Icons.image,
+                                    color: Colors.white,
+                                    size: 48,
+                                  ),
+                                ),
                         ),
                         const SizedBox(height: 8),
                         Text(
