@@ -42,7 +42,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  bool _isInitialized = false;
+  bool _hasCheckedLogin = false;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -61,16 +61,17 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _checkLoginStatus() async {
+    if (_hasCheckedLogin) return;
+    _hasCheckedLogin = true;
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     await userProvider.initUser();
-    if (!userProvider.isLoggedIn && !_isInitialized) {
-      _isInitialized = true;
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
-      }
+
+    if (!userProvider.isLoggedIn && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
     }
   }
 
@@ -106,7 +107,10 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-      body: _screens[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {

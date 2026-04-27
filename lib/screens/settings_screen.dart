@@ -2,53 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/services/user_provider.dart';
 import 'package:dao_app/screens/login_screen.dart';
+import 'package:dao_app/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  late UserProvider _userProvider;
-
-  @override
-  void initState() {
-    super.initState();
-    _userProvider = Provider.of<UserProvider>(context, listen: false);
-  }
-
-  Future<void> _logout() async {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('退出登录'),
-        content: const Text('确定要退出登录吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await _userProvider.logout();
-              if (mounted) {
-                Navigator.pop(dialogContext);
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false,
-                );
-              }
-            },
-            child: const Text('确定'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -252,7 +210,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _logout,
+              onPressed: () => _showLogoutDialog(context, userProvider),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: Colors.red,
@@ -271,6 +229,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, UserProvider userProvider) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('退出登录'),
+        content: const Text('确定要退出登录吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await userProvider.logout();
+              Navigator.pop(dialogContext);
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+            child: const Text('确定'),
+          ),
         ],
       ),
     );
