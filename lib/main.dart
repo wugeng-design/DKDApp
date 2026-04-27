@@ -42,6 +42,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  bool _isInitialized = false;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -52,9 +53,31 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkLoginStatus();
+    });
+  }
+
+  void _checkLoginStatus() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.initUser();
+    if (!userProvider.isLoggedIn && !_isInitialized) {
+      _isInitialized = true;
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dao · 道'),
