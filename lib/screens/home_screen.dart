@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/screens/photo_quote_screen.dart';
-import 'package:dao_app/screens/login_screen.dart';
 import 'package:dao_app/services/database_service.dart';
-import 'package:dao_app/services/user_provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class ChatMessage {
@@ -47,13 +44,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final TextEditingController _chatController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isChatLoading = false;
-  
+
   // 语音识别相关
   late stt.SpeechToText _speech;
   bool _isListening = false;
   bool _isSpeechEnabled = false;
   String _lastWords = '';
-  
+
   // 输入模式控制
   bool _isVoiceMode = false;
 
@@ -76,22 +73,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       CurvedAnimation(parent: _refreshController, curve: Curves.easeInOut),
     );
   }
-  
+
   // 初始化语音识别
   void _initSpeech() async {
     _speech = stt.SpeechToText();
     _isSpeechEnabled = await _speech.initialize();
   }
-  
+
   // 开始语音识别
   void _startListening() async {
     if (!_isSpeechEnabled) return;
-    
+
     setState(() {
       _isListening = true;
       _lastWords = '';
     });
-    
+
     await _speech.listen(
       onResult: (result) {
         setState(() {
@@ -110,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       localeId: 'zh_CN',
     );
   }
-  
+
   // 停止语音识别
   void _stopListening() async {
     await _speech.stop();
@@ -118,18 +115,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _isListening = false;
     });
   }
-  
+
   // 发送语音消息
   void _sendVoiceMessage(String voiceText) async {
     if (voiceText.isEmpty || _isChatLoading) return;
-    
+
     setState(() {
       _chatMessages.add(ChatMessage(content: voiceText, isUser: true));
       _isChatLoading = true;
     });
-    
+
     _scrollToBottom();
-    
+
     try {
       final response = await AIService.chat(voiceText);
       setState(() {
@@ -145,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         _isChatLoading = false;
       });
     }
-    
+
     _scrollToBottom();
   }
 
@@ -278,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         '是以圣人后其身而身先，外其身而身存。',
         '非以其无私邪？故能成其私。'
       ];
-      
+
       // 添加到数据库
       final dbService = DatabaseService();
       for (var quote in extraQuotes) {
@@ -298,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _showAIExplanation = false;
       aiExplanation = '';
     });
-    
+
     // 第一次刷新时，请求大模型补充名言
     if (!_hasFetchedExtraQuotes) {
       await _fetchExtraQuotes();
@@ -334,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _hasError = false;
       _errorMessage = '';
     });
-    
+
     try {
       final explanation = await AIService.getExplanation(todayQuote, style: _explanationStyle);
       setState(() {
@@ -354,84 +351,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final user = userProvider.user;
-    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dao · 道'),
-        centerTitle: true,
-        backgroundColor: AppTheme.backgroundColor,
-        elevation: 0,
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 用户信息卡片
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: NetworkImage(user?['avatar'] ?? 'https://via.placeholder.com/150'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              userProvider.isLoggedIn ? '欢迎，${user?['nickname']}' : '未登录',
-                              style: AppTheme.subtitleStyle,
-                            ),
-                            Text(
-                              userProvider.isLoggedIn ? (user?['phone'] ?? '') : '登录后享受更多功能',
-                              style: AppTheme.captionStyle,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (!userProvider.isLoggedIn)
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LoginScreen()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentColor,
-                        ),
-                        child: const Text('登录'),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24.0),
-            
             // 今日一言
             const Text('今日一言', style: AppTheme.titleStyle),
             const SizedBox(height: 16.0),
-            
+
             // 显示选择的照片
             if (_selectedImage != null)
               Container(
@@ -463,7 +392,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
                       ),
               ),
-            
+
             Card(
               margin: EdgeInsets.zero,
               elevation: 2,
@@ -498,10 +427,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           _hasError = false;
                           _errorMessage = '';
                         });
-                        
+
                         try {
                           String quoteToExplain = todayQuote;
-                          
+
                           // 如果有选择的照片，先根据照片生成道家真言
                           if (_selectedImage != null) {
                             quoteToExplain = await AIService.getQuoteFromImage(_selectedImage!);
@@ -509,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               todayQuote = quoteToExplain;
                             });
                           }
-                          
+
                           // 然后解读生成的真言
                           final explanation = await AIService.getExplanation(quoteToExplain, style: _explanationStyle);
                           setState(() {
@@ -528,16 +457,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         }
                       }
                     },
-                    child: _isLoading 
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        ) 
-                      : Text(_showAIExplanation ? '收起解读' : 'AI解读'),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(_showAIExplanation ? '收起解读' : 'AI解读'),
                   ),
                   const SizedBox(width: 16.0),
                   _buildRefreshButton(),
@@ -641,7 +570,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ),
               ),
             if (_showAIExplanation && !_hasError) const SizedBox(height: 16.0),
-            
+
             // 解读风格选择和刷新按钮
             if (_showAIExplanation && !_hasError)
               Row(
