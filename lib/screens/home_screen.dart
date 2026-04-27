@@ -50,6 +50,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   bool _isListening = false;
   bool _isSpeechEnabled = false;
   String _lastWords = '';
+  
+  // 输入模式控制
+  bool _isVoiceMode = false;
 
   // 动画控制器
   late AnimationController _refreshController;
@@ -727,63 +730,89 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: TextField(
-                            controller: _chatController,
-                            decoration: InputDecoration(
-                              hintText: '输入你的问题...',
-                              hintStyle: AppTheme.captionStyle,
-                              border: OutlineInputBorder(
+                          child: _isVoiceMode
+                              ? GestureDetector(
+                                  onTapDown: (_) => _startListening(),
+                                  onTapUp: (_) => _stopListening(),
+                                  onTapCancel: () => _stopListening(),
+                                  child: Container(
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: _isListening ? AppTheme.accentColor : Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '按住说话',
+                                        style: TextStyle(
+                                          color: _isListening ? Colors.white : AppTheme.accentColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : TextField(
+                                  controller: _chatController,
+                                  decoration: InputDecoration(
+                                    hintText: '输入你的问题...',
+                                    hintStyle: AppTheme.captionStyle,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.grey[100],
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  textInputAction: TextInputAction.send,
+                                  onSubmitted: (_) => _sendChatMessage(),
+                                ),
+                        ),
+                        const SizedBox(width: 12),
+                        // 模式切换按钮
+                        GestureDetector(
+                          onTap: _isChatLoading ? null : () {
+                            setState(() {
+                              _isVoiceMode = !_isVoiceMode;
+                            });
+                          },
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Icon(
+                              _isVoiceMode ? Icons.keyboard : Icons.mic_none,
+                              color: AppTheme.accentColor,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        if (!_isVoiceMode) ...[
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: _isChatLoading ? null : _sendChatMessage,
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: _isChatLoading ? Colors.grey : AppTheme.accentColor,
                                 borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
                               ),
-                              filled: true,
-                              fillColor: Colors.grey[100],
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
+                              child: Icon(
+                                Icons.send,
+                                color: Colors.white,
+                                size: 20,
                               ),
                             ),
-                            textInputAction: TextInputAction.send,
-                            onSubmitted: (_) => _sendChatMessage(),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        // 语音输入按钮
-                        GestureDetector(
-                          onTapDown: (_) => _startListening(),
-                          onTapUp: (_) => _stopListening(),
-                          onTapCancel: () => _stopListening(),
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: _isListening ? AppTheme.accentColor : Colors.grey[100],
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: Icon(
-                              _isListening ? Icons.mic : Icons.mic_none,
-                              color: _isListening ? Colors.white : AppTheme.accentColor,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        GestureDetector(
-                          onTap: _isChatLoading ? null : _sendChatMessage,
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: _isChatLoading ? Colors.grey : AppTheme.accentColor,
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: Icon(
-                              Icons.send,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
