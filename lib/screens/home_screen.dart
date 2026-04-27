@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/screens/photo_quote_screen.dart';
+import 'package:dao_app/screens/login_screen.dart';
 import 'package:dao_app/services/database_service.dart';
+import 'package:dao_app/services/user_provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class ChatMessage {
@@ -351,6 +354,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.user;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dao · 道'),
@@ -363,6 +369,65 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 用户信息卡片
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              image: NetworkImage(user?['avatar'] ?? 'https://via.placeholder.com/150'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              userProvider.isLoggedIn ? '欢迎，${user?['nickname']}' : '未登录',
+                              style: AppTheme.subtitleStyle,
+                            ),
+                            Text(
+                              userProvider.isLoggedIn ? (user?['phone'] ?? '') : '登录后享受更多功能',
+                              style: AppTheme.captionStyle,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    if (!userProvider.isLoggedIn)
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.accentColor,
+                        ),
+                        child: const Text('登录'),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24.0),
+            
             // 今日一言
             const Text('今日一言', style: AppTheme.titleStyle),
             const SizedBox(height: 16.0),
