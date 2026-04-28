@@ -1900,7 +1900,7 @@ class DatabaseService {
     String dynasty, 
     String practice, 
     String description, 
-    List<Map<String, String>> info, 
+    List<Map<String, dynamic>> info, 
     List<String> representatives
   ) async {
     if (kIsWeb) {
