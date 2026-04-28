@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
-  static const String _baseUrl = 'http://localhost:3000/auth';
+  static const String _baseUrl = 'http://192.168.1.7:3000/auth';
   
   // 发送验证码
   Future<bool> sendVerificationCode(String phoneNumber) async {
