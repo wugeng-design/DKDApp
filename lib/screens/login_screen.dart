@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/services/user_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:dao_app/screens/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -120,10 +121,15 @@ class _LoginScreenState extends State<LoginScreen> {
       print('[LoginScreen] _login - 登录结果: $success');
       print('[LoginScreen] _login - 当前isLoggedIn状态: ${userProvider.isLoggedIn}');
 
-      if (!success && mounted) {
-        _showSnackBar('登录失败，请检查验证码是否正确');
-      } else if (success) {
+      if (success && mounted) {
         _showSnackBar('登录成功！');
+        // 登录成功后直接跳转到主页
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      } else if (!success && mounted) {
+        _showSnackBar('登录失败，请检查验证码是否正确');
       }
     } catch (e) {
       print('[LoginScreen] _login - 异常: $e');
@@ -173,10 +179,15 @@ class _LoginScreenState extends State<LoginScreen> {
       print('[LoginScreen] _register - 注册结果: $success');
       print('[LoginScreen] _register - 当前isLoggedIn状态: ${userProvider.isLoggedIn}');
 
-      if (!success && mounted) {
-        _showSnackBar('注册失败，请重试');
-      } else if (success) {
+      if (success && mounted) {
         _showSnackBar('注册成功！');
+        // 注册成功后直接跳转到主页
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      } else if (!success && mounted) {
+        _showSnackBar('注册失败，请重试');
       }
     } catch (e) {
       print('[LoginScreen] _register - 异常: $e');
