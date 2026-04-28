@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/services/database_service.dart';
+import 'package:dao_app/services/api_service.dart';
 
 class FigureScreen extends StatefulWidget {
   final String? figureName;
@@ -16,6 +17,7 @@ class _FigureScreenState extends State<FigureScreen> {
   int _currentPage = 0;
   final int _pageSize = 5;
   bool _isLoading = true;
+  bool _useLocalData = false;
   
   @override
   void initState() {
@@ -29,31 +31,74 @@ class _FigureScreenState extends State<FigureScreen> {
     });
     
     try {
-      // 从数据库加载人物数据
-      figures = await DatabaseService().getAllFigures();
+      List<Map<String, dynamic>>? apiFigures = await ApiService.fetchFigures();
+      
+      if (apiFigures != null && apiFigures.isNotEmpty) {
+        figures = apiFigures;
+        _useLocalData = false;
+        await _syncToLocal(apiFigures);
+      } else {
+        throw Exception('API返回数据为空');
+      }
     } catch (e) {
-      print('加载人物数据失败: $e');
-      figures = [];
+      print('从API加载人物数据失败，使用本地数据: $e');
+      try {
+        figures = await DatabaseService().getAllFigures();
+        _useLocalData = true;
+      } catch (localError) {
+        print('加载本地人物数据失败: $localError');
+        figures = [];
+      }
     } finally {
       setState(() {
         _isLoading = false;
       });
       
-      // 如果有figureName参数，直接展示该人物的详情
       if (widget.figureName != null) {
-        final figure = figures.firstWhere(
-          (fig) => fig['name'] == widget.figureName,
-          orElse: () => {
-            'name': widget.figureName!,
-            'era': '',
-            'bio': '正在加载人物信息...',
-            'coreThoughts': [],
-            'works': []
-          }
-        );
-        _showFigureDetail(figure);
+        _showFigureDetailByName(widget.figureName!);
       }
     }
+  }
+  
+  Future<void> _syncToLocal(List<Map<String, dynamic>> apiFigures) async {
+    try {
+      for (var figure in apiFigures) {
+        await DatabaseService().saveFigureWithDetails(
+          figure['name'],
+          figure['bio'] ?? '',
+          List<String>.from(figure['coreThoughts'] ?? []),
+          List<String>.from(figure['works'] ?? []),
+        );
+      }
+    } catch (e) {
+      print('同步人物数据到本地失败: $e');
+    }
+  }
+  
+  Future<void> _showFigureDetailByName(String name) async {
+    Map<String, dynamic>? apiFigure;
+    try {
+      apiFigure = await ApiService.fetchFigureByName(name);
+    } catch (e) {
+      print('从API获取人物详情失败: $e');
+    }
+    
+    Map<String, dynamic> figure;
+    if (apiFigure != null) {
+      figure = apiFigure;
+    } else {
+      figure = figures.firstWhere(
+        (fig) => fig['name'] == name,
+        orElse: () => {
+          'name': name,
+          'era': '',
+          'bio': '未找到该人物信息',
+          'coreThoughts': [],
+          'works': []
+        }
+      );
+    }
+    _showFigureDetail(figure);
   }
 
   void _showFigureDetail(Map<String, dynamic> figure) {
