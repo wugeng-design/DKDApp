@@ -3,15 +3,25 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
-  static const String _baseUrl = 'https://api.example.com/auth'; // 模拟API地址
+  static const String _baseUrl = 'http://localhost:3000/auth';
   
   // 发送验证码
   Future<bool> sendVerificationCode(String phoneNumber) async {
     try {
-      // 模拟API调用
-      await Future.delayed(const Duration(seconds: 1));
-      print('验证码已发送到 $phoneNumber');
-      return true;
+      final response = await http.post(
+        Uri.parse('$_baseUrl/send-code'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'phone': phoneNumber}),
+      );
+      
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('发送验证码成功: ${data['message']}');
+        return true;
+      } else {
+        print('发送验证码失败: ${response.body}');
+        return false;
+      }
     } catch (e) {
       print('发送验证码失败: $e');
       return false;
@@ -21,22 +31,31 @@ class UserService {
   // 手机号登录
   Future<Map<String, dynamic>?> loginWithPhone(String phoneNumber, String code) async {
     try {
-      // 模拟API调用
-      await Future.delayed(const Duration(seconds: 1));
+      final response = await http.post(
+        Uri.parse('$_baseUrl/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'phone': phoneNumber, 'code': code}),
+      );
       
-      // 模拟登录成功响应
-      final userData = {
-        'id': '123456',
-        'phone': phoneNumber,
-        'nickname': '用户${phoneNumber.substring(7)}',
-        'avatar': 'https://via.placeholder.com/150',
-        'token': 'mock_token_${DateTime.now().millisecondsSinceEpoch}',
-      };
-      
-      // 保存用户信息到本地
-      await _saveUserInfo(userData);
-      
-      return userData;
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final userData = {
+            'id': data['data']['user']['id'],
+            'phone': data['data']['user']['phone'],
+            'nickname': data['data']['user']['nickname'],
+            'avatar': data['data']['user']['avatar'] ?? '',
+            'token': data['data']['token'],
+          };
+          
+          await _saveUserInfo(userData);
+          print('登录成功');
+          return userData;
+        }
+      } else {
+        print('登录失败: ${response.body}');
+      }
+      return null;
     } catch (e) {
       print('登录失败: $e');
       return null;
@@ -46,22 +65,31 @@ class UserService {
   // 注册
   Future<Map<String, dynamic>?> registerWithPhone(String phoneNumber, String code, String nickname) async {
     try {
-      // 模拟API调用
-      await Future.delayed(const Duration(seconds: 1));
+      final response = await http.post(
+        Uri.parse('$_baseUrl/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'phone': phoneNumber, 'code': code, 'nickname': nickname}),
+      );
       
-      // 模拟注册成功响应
-      final userData = {
-        'id': '123456',
-        'phone': phoneNumber,
-        'nickname': nickname,
-        'avatar': 'https://via.placeholder.com/150',
-        'token': 'mock_token_${DateTime.now().millisecondsSinceEpoch}',
-      };
-      
-      // 保存用户信息到本地
-      await _saveUserInfo(userData);
-      
-      return userData;
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final userData = {
+            'id': data['data']['user']['id'],
+            'phone': data['data']['user']['phone'],
+            'nickname': data['data']['user']['nickname'],
+            'avatar': data['data']['user']['avatar'] ?? '',
+            'token': data['data']['token'],
+          };
+          
+          await _saveUserInfo(userData);
+          print('注册成功');
+          return userData;
+        }
+      } else {
+        print('注册失败: ${response.body}');
+      }
+      return null;
     } catch (e) {
       print('注册失败: $e');
       return null;
