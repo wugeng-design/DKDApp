@@ -131,12 +131,12 @@ class UserService {
   }
   
   // 账号密码注册
-  Future<Map<String, dynamic>?> registerWithPassword(String username, String password, String nickname) async {
+  Future<Map<String, dynamic>?> registerWithPassword(String phone, String username, String password, String nickname) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/register-password'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'username': username, 'password': password, 'nickname': nickname}),
+        body: json.encode({'phone': phone, 'username': username, 'password': password, 'nickname': nickname}),
       );
       
       if (response.statusCode == 201 || response.statusCode == 200) {

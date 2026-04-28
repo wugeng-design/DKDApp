@@ -120,13 +120,13 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> registerWithPassword(String username, String password, String nickname) async {
-    print('[UserProvider] registerWithPassword - 开始账号密码注册, username: $username, nickname: $nickname');
+  Future<bool> registerWithPassword(String phone, String username, String password, String nickname) async {
+    print('[UserProvider] registerWithPassword - 开始账号密码注册, phone: $phone, username: $username, nickname: $nickname');
     _isLoading = true;
     notifyListeners();
 
     try {
-      final userData = await _userService.registerWithPassword(username, password, nickname);
+      final userData = await _userService.registerWithPassword(phone, username, password, nickname);
       print('[UserProvider] registerWithPassword - userData: $userData');
       if (userData != null) {
         _user = userData;
