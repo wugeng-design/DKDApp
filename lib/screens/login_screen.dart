@@ -210,9 +210,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _registerWithPassword() async {
+    final phone = _phoneController.text.trim();
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
     final nickname = _nicknameController.text.trim();
+
+    if (phone.isEmpty || phone.length != 11) {
+      _showSnackBar('请输入正确的手机号');
+      return;
+    }
 
     if (username.isEmpty) {
       _showSnackBar('请输入账号');
@@ -229,7 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    print('[LoginScreen] _registerWithPassword - 开始账号密码注册, username: $username, nickname: $nickname');
+    print('[LoginScreen] _registerWithPassword - 开始账号密码注册, phone: $phone, username: $username, nickname: $nickname');
 
     setState(() {
       _isLoggingIn = true;
@@ -239,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       print('[LoginScreen] _registerWithPassword - 获取到UserProvider');
 
-      final success = await userProvider.registerWithPassword(username, password, nickname);
+      final success = await userProvider.registerWithPassword(phone, username, password, nickname);
       print('[LoginScreen] _registerWithPassword - 注册结果: $success');
 
       if (success && mounted) {
@@ -342,6 +348,20 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildPasswordLoginForm() {
     return Column(
       children: [
+        if (_isRegisterMode)
+          TextField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: InputDecoration(
+              labelText: '手机号',
+              hintText: '请输入11位手机号',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              prefixIcon: const Icon(Icons.phone),
+            ),
+          ),
+        if (_isRegisterMode) const SizedBox(height: 16),
         TextField(
           controller: _usernameController,
           decoration: InputDecoration(
