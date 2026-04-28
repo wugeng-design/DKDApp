@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/services/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -18,17 +16,16 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isRegisterMode = false;
   bool _isSendingCode = false;
   int _countdown = 0;
-  Timer? _countdownTimer;
   bool _isLoggingIn = false;
 
   @override
   void initState() {
     super.initState();
+    print('[LoginScreen] initState - 登录页面初始化');
   }
 
   @override
   void dispose() {
-    _countdownTimer?.cancel();
     _phoneController.dispose();
     _codeController.dispose();
     _nicknameController.dispose();
@@ -36,23 +33,20 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _startCountdown() {
-    _countdownTimer?.cancel();
+    print('[LoginScreen] _startCountdown - 开始倒计时');
     setState(() {
       _countdown = 60;
       _isSendingCode = true;
     });
 
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
+    Future.delayed(const Duration(seconds: 1), () {
+      if (!mounted) return;
       if (_countdown > 0) {
         setState(() {
           _countdown--;
         });
+        _startCountdown();
       } else {
-        timer.cancel();
         if (mounted) {
           setState(() {
             _isSendingCode = false;
@@ -69,13 +63,17 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    print('[LoginScreen] _sendVerificationCode - 发送验证码到 $phone');
+
     setState(() {
       _isSendingCode = true;
     });
 
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
+      print('[LoginScreen] _sendVerificationCode - 获取到UserProvider');
       final success = await userProvider.sendVerificationCode(phone);
+      print('[LoginScreen] _sendVerificationCode - 发送结果: $success');
       if (success) {
         _showSnackBar('验证码已发送');
         _startCountdown();
@@ -83,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _showSnackBar('发送验证码失败，请重试');
       }
     } catch (e) {
+      print('[LoginScreen] _sendVerificationCode - 异常: $e');
       _showSnackBar('发送验证码失败：$e');
     } finally {
       if (mounted) {
@@ -107,17 +106,27 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    print('[LoginScreen] _login - 开始登录, phone: $phone, code: $code');
+
     setState(() {
       _isLoggingIn = true;
     });
 
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
+      print('[LoginScreen] _login - 获取到UserProvider, isLoggedIn: ${userProvider.isLoggedIn}');
+
       final success = await userProvider.loginWithPhone(phone, code);
+      print('[LoginScreen] _login - 登录结果: $success');
+      print('[LoginScreen] _login - 当前isLoggedIn状态: ${userProvider.isLoggedIn}');
+
       if (!success && mounted) {
         _showSnackBar('登录失败，请检查验证码是否正确');
+      } else if (success) {
+        _showSnackBar('登录成功！');
       }
     } catch (e) {
+      print('[LoginScreen] _login - 异常: $e');
       if (mounted) {
         _showSnackBar('登录失败：$e');
       }
@@ -150,17 +159,27 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    print('[LoginScreen] _register - 开始注册, phone: $phone, nickname: $nickname');
+
     setState(() {
       _isLoggingIn = true;
     });
 
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
+      print('[LoginScreen] _register - 获取到UserProvider, isLoggedIn: ${userProvider.isLoggedIn}');
+
       final success = await userProvider.registerWithPhone(phone, code, nickname);
+      print('[LoginScreen] _register - 注册结果: $success');
+      print('[LoginScreen] _register - 当前isLoggedIn状态: ${userProvider.isLoggedIn}');
+
       if (!success && mounted) {
         _showSnackBar('注册失败，请重试');
+      } else if (success) {
+        _showSnackBar('注册成功！');
       }
     } catch (e) {
+      print('[LoginScreen] _register - 异常: $e');
       if (mounted) {
         _showSnackBar('注册失败：$e');
       }
@@ -174,6 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showSnackBar(String message) {
+    print('[LoginScreen] _showSnackBar - $message');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -184,11 +204,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('[LoginScreen] build - 构建登录页面');
     return Scaffold(
       appBar: AppBar(
         title: Text(_isRegisterMode ? '注册' : '登录'),
         centerTitle: true,
-        backgroundColor: AppTheme.backgroundColor,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -201,32 +221,29 @@ class _LoginScreenState extends State<LoginScreen> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppTheme.accentColor.withOpacity(0.1),
+                color: Colors.blue.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(50),
               ),
-              child: Center(
+              child: const Center(
                 child: Icon(
                   Icons.person,
                   size: 50,
-                  color: AppTheme.accentColor,
+                  color: Colors.blue,
                 ),
               ),
             ),
             const SizedBox(height: 32),
             Text(
               _isRegisterMode ? '创建新账号' : '欢迎回来',
-              style: AppTheme.titleStyle,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               _isRegisterMode ? '注册后即可使用全部功能' : '请登录您的账号',
-              style: AppTheme.bodyStyle.copyWith(
-                color: AppTheme.textSecondaryColor,
-              ),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 40),
 
-            // 手机号输入
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
@@ -234,14 +251,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelText: '手机号',
                 hintText: '请输入11位手机号',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 prefixIcon: const Icon(Icons.phone),
               ),
             ),
             const SizedBox(height: 16),
 
-            // 验证码输入
             Row(
               children: [
                 Expanded(
@@ -252,7 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelText: '验证码',
                       hintText: '请输入6位验证码',
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       prefixIcon: const Icon(Icons.lock),
                     ),
@@ -263,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isSendingCode ? null : _sendVerificationCode,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    backgroundColor: _isSendingCode ? Colors.grey : AppTheme.accentColor,
+                    backgroundColor: _isSendingCode ? Colors.grey : Colors.blue,
                   ),
                   child: Text(
                     _isSendingCode ? '$_countdown秒后重试' : '发送验证码',
@@ -274,7 +290,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
 
-            // 昵称输入（仅注册模式）
             if (_isRegisterMode)
               TextField(
                 controller: _nicknameController,
@@ -282,14 +297,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: '昵称',
                   hintText: '请输入您的昵称',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   prefixIcon: const Icon(Icons.person_outline),
                 ),
               ),
             if (_isRegisterMode) const SizedBox(height: 24),
 
-            // 登录/注册按钮
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -298,9 +312,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     : (_isRegisterMode ? _register : _login),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: AppTheme.accentColor,
+                  backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: _isLoggingIn
@@ -324,7 +338,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 24),
 
-            // 切换登录/注册模式
             GestureDetector(
               onTap: () {
                 setState(() {
@@ -335,39 +348,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 _isRegisterMode
                     ? '已有账号？去登录'
                     : '还没有账号？去注册',
-                style: TextStyle(
-                  color: AppTheme.accentColor,
+                style: const TextStyle(
+                  color: Colors.blue,
                   decoration: TextDecoration.underline,
                 ),
               ),
-            ),
-            const SizedBox(height: 40),
-
-            // 其他登录方式（可选）
-            Column(
-              children: [
-                Text(
-                  '其他登录方式',
-                  style: AppTheme.captionStyle,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.wechat),
-                      iconSize: 40,
-                    ),
-                    const SizedBox(width: 32),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.phone_android),
-                      iconSize: 40,
-                    ),
-                  ],
-                ),
-              ],
             ),
           ],
         ),

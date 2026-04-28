@@ -13,7 +13,7 @@ import 'package:dao_app/services/user_provider.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (context) => UserProvider()..initUser(),
+      create: (context) => UserProvider(),
       child: const MyApp(),
     ),
   );
@@ -41,41 +41,38 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  bool _isInitialized = false;
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAuth();
-    });
-  }
-
-  Future<void> _checkAuth() async {
-    if (_isInitialized) return;
-    _isInitialized = true;
-
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    await userProvider.initUser();
+    print('[AuthWrapper] initState');
   }
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
+    print('[AuthWrapper] build - 构建中');
 
-    if (!_isInitialized) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, _) {
+        print('[AuthWrapper] build - userProvider.isLoggedIn: ${userProvider.isLoggedIn}, isLoading: ${userProvider.isLoading}');
 
-    if (userProvider.isLoggedIn) {
-      return const MainScreen();
-    } else {
-      return const LoginScreen();
-    }
+        if (userProvider.isLoading) {
+          print('[AuthWrapper] build - 显示加载页面');
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (userProvider.isLoggedIn) {
+          print('[AuthWrapper] build - 显示主页');
+          return const MainScreen();
+        } else {
+          print('[AuthWrapper] build - 显示登录页');
+          return const LoginScreen();
+        }
+      },
+    );
   }
 }
 
@@ -98,9 +95,14 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
+  void initState() {
+    super.initState();
+    print('[MainScreen] initState');
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    print('[MainScreen] build - index: $_currentIndex');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dao · 道'),
