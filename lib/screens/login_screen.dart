@@ -93,14 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final success = await _userProvider.loginWithPhone(phone, code);
-    if (success) {
-      if (mounted) {
-        Navigator.pop(context);
-      }
-    } else {
-      _showSnackBar('登录失败，请检查验证码是否正确');
-    }
+    await _userProvider.loginWithPhone(phone, code);
   }
 
   Future<void> _register() async {
@@ -123,14 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final success = await _userProvider.registerWithPhone(phone, code, nickname);
-    if (success) {
-      if (mounted) {
-        Navigator.pop(context);
-      }
-    } else {
-      _showSnackBar('注册失败，请重试');
-    }
+    await _userProvider.registerWithPhone(phone, code, nickname);
   }
 
   void _showSnackBar(String message) {
