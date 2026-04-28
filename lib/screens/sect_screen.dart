@@ -3,6 +3,7 @@ import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/screens/figure_screen.dart';
 import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/services/database_service.dart';
+import 'package:dao_app/services/api_service.dart';
 
 class SectScreen extends StatefulWidget {
   const SectScreen({super.key});
@@ -12,7 +13,6 @@ class SectScreen extends StatefulWidget {
 }
 
 class _SectScreenState extends State<SectScreen> {
-  // 朝代顺序映射
   final Map<String, int> dynastyOrder = {
     '东汉': 1,
     '魏晋': 2,
@@ -28,6 +28,7 @@ class _SectScreenState extends State<SectScreen> {
   int currentPage = 1;
   final int itemsPerPage = 5;
   bool isLoading = true;
+  bool _useLocalData = false;
 
   @override
   void initState() {
@@ -35,24 +36,52 @@ class _SectScreenState extends State<SectScreen> {
     _loadSects();
   }
 
-  // 从数据库加载派系数据
   Future<void> _loadSects() async {
     setState(() {
       isLoading = true;
     });
     
     try {
-      // 从数据库加载派系数据
-      sects = await DatabaseService().getAllSects();
-      // 按朝代排序
-      _sortSectsByDynasty();
+      List<Map<String, dynamic>>? apiSects = await ApiService.fetchSects();
+      
+      if (apiSects != null && apiSects.isNotEmpty) {
+        sects = apiSects;
+        _useLocalData = false;
+        await _syncToLocal(apiSects);
+      } else {
+        throw Exception('API返回数据为空');
+      }
     } catch (e) {
-      print('加载派系数据失败: $e');
-      sects = [];
+      print('从API加载派系数据失败，使用本地数据: $e');
+      try {
+        sects = await DatabaseService().getAllSects();
+        _useLocalData = true;
+      } catch (localError) {
+        print('加载本地派系数据失败: $localError');
+        sects = [];
+      }
     } finally {
+      _sortSectsByDynasty();
       setState(() {
         isLoading = false;
       });
+    }
+  }
+  
+  Future<void> _syncToLocal(List<Map<String, dynamic>> apiSects) async {
+    try {
+      for (var sect in apiSects) {
+        await DatabaseService().saveSect(
+          sect['name'],
+          sect['dynasty'] ?? '',
+          sect['practice'] ?? '',
+          sect['description'] ?? '',
+          List<Map<String, String>>.from(sect['info'] ?? []),
+          List<String>.from(sect['representatives'] ?? []),
+        );
+      }
+    } catch (e) {
+      print('同步派系数据到本地失败: $e');
     }
   }
 

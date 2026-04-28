@@ -1894,4 +1894,101 @@ class DatabaseService {
     
     return sect;
   }
+
+  Future<void> saveSect(
+    String name, 
+    String dynasty, 
+    String practice, 
+    String description, 
+    List<Map<String, String>> info, 
+    List<String> representatives
+  ) async {
+    if (kIsWeb) {
+      final existingIndex = _webSects.indexWhere((s) => s['name'] == name);
+      int sectId;
+      
+      if (existingIndex >= 0) {
+        final existingSect = _webSects[existingIndex];
+        final updatedSect = Map<String, dynamic>.from(existingSect);
+        updatedSect['dynasty'] = dynasty;
+        updatedSect['practice'] = practice;
+        updatedSect['description'] = description;
+        _webSects[existingIndex] = updatedSect;
+        sectId = existingSect['id'] as int;
+        
+        _webSectInfo.removeWhere((i) => i['sect_id'] == sectId);
+        _webSectRepresentatives.removeWhere((r) => r['sect_id'] == sectId);
+      } else {
+        sectId = _webSects.length + 1;
+        final newSect = {
+          'id': sectId,
+          'name': name,
+          'dynasty': dynasty,
+          'practice': practice,
+          'description': description,
+          'created_at': DateTime.now().toIso8601String(),
+        };
+        _webSects.add(newSect);
+      }
+      
+      for (var item in info) {
+        _webSectInfo.add({
+          'id': _webSectInfo.length + 1,
+          'sect_id': sectId,
+          'key': item['key'],
+          'value': item['value'],
+        });
+      }
+      
+      for (var rep in representatives) {
+        _webSectRepresentatives.add({
+          'id': _webSectRepresentatives.length + 1,
+          'sect_id': sectId,
+          'figure_name': rep,
+        });
+      }
+      
+      return;
+    }
+    
+    final db = await database;
+    final transaction = await db.transaction((txn) async {
+      final existingSects = await txn.query('sects', where: 'name = ?', whereArgs: [name]);
+      int sectId;
+      
+      if (existingSects.isNotEmpty) {
+        await txn.update('sects', {
+          'dynasty': dynasty,
+          'practice': practice,
+          'description': description,
+        }, where: 'id = ?', whereArgs: [existingSects.first['id']]);
+        sectId = existingSects.first['id'] as int;
+        
+        await txn.delete('sect_info', where: 'sect_id = ?', whereArgs: [sectId]);
+        await txn.delete('sect_representatives', where: 'sect_id = ?', whereArgs: [sectId]);
+      } else {
+        sectId = await txn.insert('sects', {
+          'name': name,
+          'dynasty': dynasty,
+          'practice': practice,
+          'description': description,
+        });
+      }
+      
+      for (var item in info) {
+        await txn.insert('sect_info', {
+          'sect_id': sectId,
+          'key': item['key'],
+          'value': item['value'],
+        });
+      }
+      
+      for (var rep in representatives) {
+        await txn.insert('sect_representatives', {
+          'sect_id': sectId,
+          'figure_name': rep,
+        });
+      }
+    });
+  }
 }
