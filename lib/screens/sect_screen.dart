@@ -76,7 +76,7 @@ class _SectScreenState extends State<SectScreen> {
           sect['dynasty'] ?? '',
           sect['practice'] ?? '',
           sect['description'] ?? '',
-          List<Map<String, String>>.from(sect['info'] ?? []),
+          List<Map<String, dynamic>>.from(sect['info'] ?? []),
           List<String>.from(sect['representatives'] ?? []),
         );
       }
