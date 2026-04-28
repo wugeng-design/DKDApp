@@ -477,7 +477,7 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildSocialLoginButton(
-              icon: Icons.alipay,
+              icon: Icons.account_balance_wallet,
               label: '支付宝',
               color: const Color(0xFF1677FF),
               onTap: _loginWithAlipay,
