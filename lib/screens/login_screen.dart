@@ -19,12 +19,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isSendingCode = false;
   int _countdown = 0;
   Timer? _countdownTimer;
-  late UserProvider _userProvider;
+  bool _isLoggingIn = false;
 
   @override
   void initState() {
     super.initState();
-    _userProvider = Provider.of<UserProvider>(context, listen: false);
   }
 
   @override
@@ -70,12 +69,27 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final success = await _userProvider.sendVerificationCode(phone);
-    if (success) {
-      _showSnackBar('验证码已发送');
-      _startCountdown();
-    } else {
-      _showSnackBar('发送验证码失败，请重试');
+    setState(() {
+      _isSendingCode = true;
+    });
+
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final success = await userProvider.sendVerificationCode(phone);
+      if (success) {
+        _showSnackBar('验证码已发送');
+        _startCountdown();
+      } else {
+        _showSnackBar('发送验证码失败，请重试');
+      }
+    } catch (e) {
+      _showSnackBar('发送验证码失败：$e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSendingCode = false;
+        });
+      }
     }
   }
 
@@ -93,7 +107,27 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    await _userProvider.loginWithPhone(phone, code);
+    setState(() {
+      _isLoggingIn = true;
+    });
+
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final success = await userProvider.loginWithPhone(phone, code);
+      if (!success && mounted) {
+        _showSnackBar('登录失败，请检查验证码是否正确');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('登录失败：$e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoggingIn = false;
+        });
+      }
+    }
   }
 
   Future<void> _register() async {
@@ -116,7 +150,27 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    await _userProvider.registerWithPhone(phone, code, nickname);
+    setState(() {
+      _isLoggingIn = true;
+    });
+
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final success = await userProvider.registerWithPhone(phone, code, nickname);
+      if (!success && mounted) {
+        _showSnackBar('注册失败，请重试');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('注册失败：$e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoggingIn = false;
+        });
+      }
+    }
   }
 
   void _showSnackBar(String message) {
@@ -239,7 +293,7 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _userProvider.isLoading
+                onPressed: _isLoggingIn
                     ? null
                     : (_isRegisterMode ? _register : _login),
                 style: ElevatedButton.styleFrom(
@@ -249,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(AppTheme.borderRadius),
                   ),
                 ),
-                child: _userProvider.isLoading
+                child: _isLoggingIn
                     ? const SizedBox(
                         width: 20,
                         height: 20,
