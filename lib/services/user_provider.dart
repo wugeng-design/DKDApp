@@ -93,6 +93,60 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> loginWithPassword(String username, String password) async {
+    print('[UserProvider] loginWithPassword - 开始账号密码登录, username: $username');
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final userData = await _userService.loginWithPassword(username, password);
+      print('[UserProvider] loginWithPassword - userData: $userData');
+      if (userData != null) {
+        _user = userData;
+        _isLoggedIn = true;
+        print('[UserProvider] loginWithPassword - 登录成功, isLoggedIn: $_isLoggedIn');
+        notifyListeners();
+        return true;
+      }
+      print('[UserProvider] loginWithPassword - userData为null');
+      return false;
+    } catch (e) {
+      print('[UserProvider] loginWithPassword - 异常: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      print('[UserProvider] loginWithPassword - 完成, isLoggedIn: $_isLoggedIn');
+      notifyListeners();
+    }
+  }
+
+  Future<bool> registerWithPassword(String username, String password, String nickname) async {
+    print('[UserProvider] registerWithPassword - 开始账号密码注册, username: $username, nickname: $nickname');
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final userData = await _userService.registerWithPassword(username, password, nickname);
+      print('[UserProvider] registerWithPassword - userData: $userData');
+      if (userData != null) {
+        _user = userData;
+        _isLoggedIn = true;
+        print('[UserProvider] registerWithPassword - 注册成功, isLoggedIn: $_isLoggedIn');
+        notifyListeners();
+        return true;
+      }
+      print('[UserProvider] registerWithPassword - userData为null');
+      return false;
+    } catch (e) {
+      print('[UserProvider] registerWithPassword - 异常: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      print('[UserProvider] registerWithPassword - 完成, isLoggedIn: $_isLoggedIn');
+      notifyListeners();
+    }
+  }
+
   Future<void> logout() async {
     print('[UserProvider] logout - 开始登出');
     _isLoading = true;
