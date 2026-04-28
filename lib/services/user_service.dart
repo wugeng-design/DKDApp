@@ -96,6 +96,74 @@ class UserService {
     }
   }
   
+  // 账号密码登录
+  Future<Map<String, dynamic>?> loginWithPassword(String username, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/login-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'username': username, 'password': password}),
+      );
+      
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final userData = {
+            'id': data['data']['user']['id'],
+            'username': data['data']['user']['username'],
+            'nickname': data['data']['user']['nickname'],
+            'avatar': data['data']['user']['avatar'] ?? '',
+            'token': data['data']['token'],
+          };
+          
+          await _saveUserInfo(userData);
+          print('账号密码登录成功');
+          return userData;
+        }
+      } else {
+        print('账号密码登录失败: ${response.body}');
+      }
+      return null;
+    } catch (e) {
+      print('账号密码登录失败: $e');
+      return null;
+    }
+  }
+  
+  // 账号密码注册
+  Future<Map<String, dynamic>?> registerWithPassword(String username, String password, String nickname) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/register-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'username': username, 'password': password, 'nickname': nickname}),
+      );
+      
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final userData = {
+            'id': data['data']['user']['id'],
+            'username': data['data']['user']['username'],
+            'nickname': data['data']['user']['nickname'],
+            'avatar': data['data']['user']['avatar'] ?? '',
+            'token': data['data']['token'],
+          };
+          
+          await _saveUserInfo(userData);
+          print('账号密码注册成功');
+          return userData;
+        }
+      } else {
+        print('账号密码注册失败: ${response.body}');
+      }
+      return null;
+    } catch (e) {
+      print('账号密码注册失败: $e');
+      return null;
+    }
+  }
+  
   // 登出
   Future<void> logout() async {
     try {
