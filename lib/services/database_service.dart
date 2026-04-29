@@ -68,7 +68,7 @@ class DatabaseService {
     String path = join(documentsDirectory.path, 'dao_app.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createTables,
       onUpgrade: _onUpgrade,
     );
@@ -813,7 +813,28 @@ class DatabaseService {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // 数据库升级逻辑
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS thought_concepts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE,
+          content TEXT,
+          example TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      ''');
+      
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS thought_concept_representatives (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          concept_id INTEGER,
+          figure_name TEXT NOT NULL,
+          FOREIGN KEY (concept_id) REFERENCES thought_concepts(id) ON DELETE CASCADE
+        );
+      ''');
+      
+      await _insertDefaultThoughtConcepts(db);
+    }
   }
 
   // 插入默认名言数据
