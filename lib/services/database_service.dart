@@ -24,19 +24,17 @@ class DatabaseService {
   static List<Map<String, dynamic>> _webThoughtConceptRepresentatives = [];
   static bool _webDataInitialized = false;
 
+  static bool _initialDataInserted = false;
+
   Future<Database> get database async {
     if (kIsWeb) {
-      // 在web平台上，我们使用内存存储模拟数据库
       if (!_webDataInitialized) {
         _initializeWebData();
       }
-      // 这里返回null，因为web平台不使用sqflite
       throw UnsupportedError('sqflite is not supported on web');
     }
     
     if (_database != null) {
-      // 检查数据库中是否有数据，如果没有，插入初始数据
-      await _checkAndInsertInitialData(_database!);
       return _database!;
     }
     _database = await _initDatabase();

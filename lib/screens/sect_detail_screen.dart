@@ -100,25 +100,37 @@ class _SectDetailScreenState extends State<SectDetailScreen> {
                       const SizedBox(height: 8.0),
                       Text(_sect!['description'] ?? '', style: AppTheme.bodyStyle),
                       const SizedBox(height: 16.0),
-                      if (_sect!['info'] != null && (_sect!['info'] as Map).isNotEmpty) ...[
-                        Text('核心信息', style: AppTheme.subtitleStyle),
-                        const SizedBox(height: 8.0),
-                        ...(_sect!['info'] as Map).entries.map<Widget>((entry) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${entry.key}: ',
-                                  style: AppTheme.bodyStyle.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                                Expanded(child: Text(entry.value.toString(), style: AppTheme.bodyStyle)),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        const SizedBox(height: 16.0),
+                      if (_sect!['info'] != null) ...[
+                        var infoMap = <String, dynamic>{};
+                        if (_sect!['info'] is Map) {
+                          infoMap = Map<String, dynamic>.from(_sect!['info'] as Map);
+                        } else if (_sect!['info'] is List) {
+                          for (var item in (_sect!['info'] as List)) {
+                            if (item is Map && item.containsKey('key') && item.containsKey('value')) {
+                              infoMap[item['key']] = item['value'];
+                            }
+                          }
+                        }
+                        if (infoMap.isNotEmpty) ...[
+                          Text('核心信息', style: AppTheme.subtitleStyle),
+                          const SizedBox(height: 8.0),
+                          ...infoMap.entries.map<Widget>((entry) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${entry.key}: ',
+                                    style: AppTheme.bodyStyle.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  Expanded(child: Text(entry.value.toString(), style: AppTheme.bodyStyle)),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          const SizedBox(height: 16.0),
+                        ],
                       ],
                       if (_sect!['representatives'] != null &&
                           (_sect!['representatives'] as List).isNotEmpty)
