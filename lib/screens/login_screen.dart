@@ -138,13 +138,13 @@ class _LoginScreenState extends State<LoginScreen> {
       print('[LoginScreen] _loginWithPassword - 登录结果: $success');
 
       if (success && mounted) {
-        _showSnackBar('登录成功！');
+        ToastUtil.showSuccess('登录成功！');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else if (!success && mounted) {
-        _showSnackBar('登录失败，请检查账号密码是否正确');
+        ToastUtil.showError('登录失败，请检查账号密码是否正确');
       }
     } catch (e) {
       print('[LoginScreen] _loginWithPassword - 异常: $e');
@@ -188,18 +188,18 @@ class _LoginScreenState extends State<LoginScreen> {
       print('[LoginScreen] _loginWithPhone - 登录结果: $success');
 
       if (success && mounted) {
-        _showSnackBar('登录成功！');
+        ToastUtil.showSuccess('登录成功！');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else if (!success && mounted) {
-        _showSnackBar('登录失败，请检查验证码是否正确');
+        ToastUtil.showError('登录失败，请检查验证码是否正确');
       }
     } catch (e) {
       print('[LoginScreen] _loginWithPhone - 异常: $e');
       if (mounted) {
-        _showSnackBar('登录失败：$e');
+        ToastUtil.showError('登录失败：$e');
       }
     } finally {
       if (mounted) {
@@ -250,18 +250,18 @@ class _LoginScreenState extends State<LoginScreen> {
       print('[LoginScreen] _registerWithPassword - 注册结果: $success');
 
       if (success && mounted) {
-        _showSnackBar('注册成功！');
+        ToastUtil.showSuccess('注册成功！');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else if (!success && mounted) {
-        _showSnackBar('注册失败，请重试');
+        ToastUtil.showError('注册失败，请重试');
       }
     } catch (e) {
       print('[LoginScreen] _registerWithPassword - 异常: $e');
       if (mounted) {
-        _showSnackBar('注册失败：$e');
+        ToastUtil.showError('注册失败：$e');
       }
     } finally {
       if (mounted) {
@@ -306,18 +306,18 @@ class _LoginScreenState extends State<LoginScreen> {
       print('[LoginScreen] _registerWithPhone - 注册结果: $success');
 
       if (success && mounted) {
-        _showSnackBar('注册成功！');
+        ToastUtil.showSuccess('注册成功！');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else if (!success && mounted) {
-        _showSnackBar('注册失败，请重试');
+        ToastUtil.showError('注册失败，请重试');
       }
     } catch (e) {
       print('[LoginScreen] _registerWithPhone - 异常: $e');
       if (mounted) {
-        _showSnackBar('注册失败：$e');
+        ToastUtil.showError('注册失败：$e');
       }
     } finally {
       if (mounted) {

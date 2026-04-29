@@ -57,10 +57,12 @@ class UserProvider extends ChangeNotifier {
       }
       print('[UserProvider] loginWithPhone - userData为null');
       _isLoading = false;
+      notifyListeners();
       return false;
     } catch (e) {
       print('[UserProvider] loginWithPhone - 异常: $e');
       _isLoading = false;
+      notifyListeners();
       return false;
     }
   }
@@ -83,10 +85,12 @@ class UserProvider extends ChangeNotifier {
       }
       print('[UserProvider] registerWithPhone - userData为null');
       _isLoading = false;
+      notifyListeners();
       return false;
     } catch (e) {
       print('[UserProvider] registerWithPhone - 异常: $e');
       _isLoading = false;
+      notifyListeners();
       return false;
     }
   }
@@ -109,10 +113,12 @@ class UserProvider extends ChangeNotifier {
       }
       print('[UserProvider] loginWithPassword - userData为null');
       _isLoading = false;
+      notifyListeners();
       return false;
     } catch (e) {
       print('[UserProvider] loginWithPassword - 异常: $e');
       _isLoading = false;
+      notifyListeners();
       return false;
     }
   }
@@ -135,10 +141,12 @@ class UserProvider extends ChangeNotifier {
       }
       print('[UserProvider] registerWithPassword - userData为null');
       _isLoading = false;
+      notifyListeners();
       return false;
     } catch (e) {
       print('[UserProvider] registerWithPassword - 异常: $e');
       _isLoading = false;
+      notifyListeners();
       return false;
     }
   }
