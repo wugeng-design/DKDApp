@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/toast_util.dart';
 import 'package:dao_app/screens/figure_screen.dart';
+import 'package:dao_app/screens/figure_detail_screen.dart';
+import 'package:dao_app/screens/sect_detail_screen.dart';
 import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/services/database_service.dart';
 import 'package:dao_app/services/api_service.dart';
@@ -130,21 +132,13 @@ class _SectScreenState extends State<SectScreen> {
   }
 
   // 处理代表人物点击
-  void _handleRepresentativeTap(String name) async {
-    // 调用大模型API查询人物信息
-    Map<String, dynamic> figureInfo = await AIService.getFigureInfo(name);
-    
-    // 保存人物信息到数据库
-    await DatabaseService().saveFigureWithDetails(name, figureInfo['bio'], figureInfo['coreThoughts'], figureInfo['works']);
-    
-    // 直接显示人物详情
-    _showFigureDetail({
-      'name': name,
-      'era': '',
-      'bio': figureInfo['bio'],
-      'coreThoughts': figureInfo['coreThoughts'],
-      'works': figureInfo['works']
-    });
+  void _handleRepresentativeTap(String name) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FigureDetailScreen(figureName: name),
+      ),
+    );
   }
 
   void _showSectDetail(Map<String, dynamic> sect) {
@@ -289,7 +283,14 @@ class _SectScreenState extends State<SectScreen> {
                     borderRadius: BorderRadius.circular(AppTheme.borderRadius),
                   ),
                   child: InkWell(
-                    onTap: () => _showSectDetail(sect),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SectDetailScreen(sectName: sect['name']),
+                        ),
+                      );
+                    },
                     child: Padding(
                       padding: const EdgeInsets.all(AppTheme.cardPadding),
                       child: Row(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/toast_util.dart';
+import 'package:dao_app/screens/figure_detail_screen.dart';
+import 'package:dao_app/screens/thought_detail_screen.dart';
 import 'package:dao_app/services/database_service.dart';
 import 'package:dao_app/services/api_service.dart';
 
@@ -84,7 +86,7 @@ class _FigureScreenState extends State<FigureScreen> {
     } catch (e) {
       print('从API获取人物详情失败: $e');
     }
-    
+
     Map<String, dynamic> figure;
     if (apiFigure != null) {
       figure = apiFigure;
@@ -100,7 +102,21 @@ class _FigureScreenState extends State<FigureScreen> {
         }
       );
     }
-    _showFigureDetail(figure);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FigureDetailScreen(figureName: figure['name']),
+      ),
+    );
+  }
+
+  void _handleThoughtTap(String thoughtName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ThoughtDetailScreen(conceptName: thoughtName),
+      ),
+    );
   }
 
   void _showFigureDetail(Map<String, dynamic> figure) {
@@ -126,10 +142,16 @@ class _FigureScreenState extends State<FigureScreen> {
               Wrap(
                 spacing: 8.0,
                 children: figure['coreThoughts'].map<Widget>((thought) {
-                  return Chip(
-                    label: Text(thought),
-                    backgroundColor: AppTheme.accentColor.withOpacity(0.1),
-                    labelStyle: TextStyle(color: AppTheme.accentColor),
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _handleThoughtTap(thought.toString());
+                    },
+                    child: Chip(
+                      label: Text(thought),
+                      backgroundColor: AppTheme.accentColor.withOpacity(0.1),
+                      labelStyle: TextStyle(color: AppTheme.accentColor),
+                    ),
                   );
                 }).toList(),
               ),
@@ -195,7 +217,14 @@ class _FigureScreenState extends State<FigureScreen> {
                               borderRadius: BorderRadius.circular(AppTheme.borderRadius),
                             ),
                             child: InkWell(
-                              onTap: () => _showFigureDetail(figure),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FigureDetailScreen(figureName: figure['name']),
+                                  ),
+                                );
+                              },
                               child: Padding(
                                 padding: const EdgeInsets.all(AppTheme.cardPadding),
                                 child: Row(

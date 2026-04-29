@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/screens/figure_detail_screen.dart';
+import 'package:dao_app/screens/thought_detail_screen.dart';
 import 'package:dao_app/services/database_service.dart';
 import 'package:dao_app/services/api_service.dart';
 
@@ -193,7 +194,14 @@ class _ThoughtScreenState extends State<ThoughtScreen> {
                     borderRadius: BorderRadius.circular(AppTheme.borderRadius),
                   ),
                   child: InkWell(
-                    onTap: () => _showConceptDetail(concept),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ThoughtDetailScreen(conceptName: concept['name']),
+                        ),
+                      );
+                    },
                     child: Padding(
                       padding: const EdgeInsets.all(AppTheme.cardPadding),
                       child: Row(
