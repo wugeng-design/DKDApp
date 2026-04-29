@@ -34,7 +34,6 @@ class _ThoughtScreenState extends State<ThoughtScreen> {
 
       if (apiConcepts != null && apiConcepts.isNotEmpty) {
         concepts = apiConcepts;
-        _useLocalData = false;
         await _syncToLocal(apiConcepts);
       } else {
         throw Exception('API返回数据为空');
@@ -43,7 +42,6 @@ class _ThoughtScreenState extends State<ThoughtScreen> {
       ToastUtil.showInfo('网络异常，正在使用本地数据');
       try {
         concepts = await DatabaseService().getAllThoughtConcepts();
-        _useLocalData = true;
       } catch (localError) {
         print('加载本地思想概念数据失败: $localError');
         concepts = [];
