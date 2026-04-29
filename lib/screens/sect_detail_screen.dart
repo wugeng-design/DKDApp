@@ -74,6 +74,24 @@ class _SectDetailScreenState extends State<SectDetailScreen> {
     );
   }
 
+  Map<String, dynamic> _getInfoMap() {
+    final infoMap = <String, dynamic>{};
+    if (_sect == null || _sect!['info'] == null) {
+      return infoMap;
+    }
+
+    if (_sect!['info'] is Map) {
+      return Map<String, dynamic>.from(_sect!['info'] as Map);
+    } else if (_sect!['info'] is List) {
+      for (var item in (_sect!['info'] as List)) {
+        if (item is Map && item.containsKey('key') && item.containsKey('value')) {
+          infoMap[item['key']] = item['value'];
+        }
+      }
+    }
+    return infoMap;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,64 +118,71 @@ class _SectDetailScreenState extends State<SectDetailScreen> {
                       const SizedBox(height: 8.0),
                       Text(_sect!['description'] ?? '', style: AppTheme.bodyStyle),
                       const SizedBox(height: 16.0),
-                      if (_sect!['info'] != null) ...[
-                        var infoMap = <String, dynamic>{};
-                        if (_sect!['info'] is Map) {
-                          infoMap = Map<String, dynamic>.from(_sect!['info'] as Map);
-                        } else if (_sect!['info'] is List) {
-                          for (var item in (_sect!['info'] as List)) {
-                            if (item is Map && item.containsKey('key') && item.containsKey('value')) {
-                              infoMap[item['key']] = item['value'];
-                            }
-                          }
-                        }
-                        if (infoMap.isNotEmpty) ...[
-                          Text('核心信息', style: AppTheme.subtitleStyle),
-                          const SizedBox(height: 8.0),
-                          ...infoMap.entries.map<Widget>((entry) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4.0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${entry.key}: ',
-                                    style: AppTheme.bodyStyle.copyWith(fontWeight: FontWeight.w600),
-                                  ),
-                                  Expanded(child: Text(entry.value.toString(), style: AppTheme.bodyStyle)),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                          const SizedBox(height: 16.0),
-                        ],
-                      ],
-                      if (_sect!['representatives'] != null &&
-                          (_sect!['representatives'] as List).isNotEmpty)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('代表人物', style: AppTheme.subtitleStyle),
-                            const SizedBox(height: 8.0),
-                            Wrap(
-                              spacing: 8.0,
-                              children: (_sect!['representatives'] as List).map<Widget>((rep) {
-                                return InkWell(
-                                  onTap: () => _handleRepresentativeTap(rep.toString()),
-                                  child: Chip(
-                                    label: Text(rep.toString()),
-                                    backgroundColor: AppTheme.accentColor.withOpacity(0.1),
-                                    labelStyle: TextStyle(color: AppTheme.accentColor),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                            const SizedBox(height: 16.0),
-                          ],
-                        ),
+                      _buildInfoSection(),
+                      _buildRepresentativesSection(),
                     ],
                   ),
                 ),
+    );
+  }
+
+  Widget _buildInfoSection() {
+    final infoMap = _getInfoMap();
+    if (infoMap.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('核心信息', style: AppTheme.subtitleStyle),
+        const SizedBox(height: 8.0),
+        ...infoMap.entries.map<Widget>((entry) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${entry.key}: ',
+                  style: AppTheme.bodyStyle.copyWith(fontWeight: FontWeight.w600),
+                ),
+                Expanded(child: Text(entry.value.toString(), style: AppTheme.bodyStyle)),
+              ],
+            ),
+          );
+        }).toList(),
+        const SizedBox(height: 16.0),
+      ],
+    );
+  }
+
+  Widget _buildRepresentativesSection() {
+    if (_sect!['representatives'] == null ||
+        (_sect!['representatives'] as List).isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('代表人物', style: AppTheme.subtitleStyle),
+        const SizedBox(height: 8.0),
+        Wrap(
+          spacing: 8.0,
+          children: (_sect!['representatives'] as List).map<Widget>((rep) {
+            return InkWell(
+              onTap: () => _handleRepresentativeTap(rep.toString()),
+              child: Chip(
+                label: Text(rep.toString()),
+                backgroundColor: AppTheme.accentColor.withOpacity(0.1),
+                labelStyle: TextStyle(color: AppTheme.accentColor),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16.0),
+      ],
     );
   }
 }
