@@ -7,6 +7,8 @@ class ToastUtil {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.CENTER,
+      backgroundColor: const Color(0x66000000),
+      textColor: const Color(0xFFFFFFFF),
       fontSize: 16.0,
     );
   }

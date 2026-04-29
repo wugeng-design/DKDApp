@@ -27,6 +27,14 @@ class _MainScreenState extends State<MainScreen> {
     const SearchScreen(),
   ];
 
+  final List<String> _titles = [
+    '道言',
+    '思想',
+    '人物',
+    '派系',
+    '搜索',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -38,7 +46,7 @@ class _MainScreenState extends State<MainScreen> {
     print('[MainScreen] build - index: $_currentIndex');
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dao · 道'),
+        title: Text(_titles[_currentIndex]),
         centerTitle: true,
         backgroundColor: AppTheme.backgroundColor,
         elevation: 0,
