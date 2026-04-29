@@ -2,15 +2,30 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import '../services/ai_model_config_service.dart';
 
 class AIService {
-  // 智谱AI API配置
-  static const String apiKey = '8c77f319f8be4f2cb276c2083ce144cf.dnxfej0bJb2nAKYS'; // 替换为你的智谱API Key
-  static const String apiUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-  static const String model = 'glm-4.7-flash'; // 选择合适的模型
+  static String _apiKey = '';
+  static String _apiUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+  static String _model = 'glm-4.7-flash';
 
-  // 调用大模型API进行解读
+  static Future<void> _loadConfig() async {
+    final config = await AiModelConfigService.getConfig();
+    if (config != null && config.appKey.isNotEmpty) {
+      final aiModel = AiModelConfigService.getModelById(config.modelId);
+      _apiKey = config.appKey;
+      _apiUrl = aiModel.apiUrl;
+      _model = config.customModel ?? aiModel.defaultModel;
+    } else {
+      _apiKey = '8c77f319f8be4f2cb276c2083ce144cf.dnxfej0bJb2nAKYS';
+      _apiUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+      _model = 'glm-4.7-flash';
+    }
+  }
+
   static Future<String> getExplanation(String text, {String style = 'default'}) async {
+    await _loadConfig();
+
     try {
       String prompt = '';
       switch (style) {
@@ -26,15 +41,15 @@ class AIService {
         default:
           prompt = '请详细解读这句话：$text\n要求：1. 解释句子的含义\n2. 分析其哲学思想\n3. 提供现代视角的理解\n4. 语言简洁明了';
       }
-      
+
       final response = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(_apiUrl),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey'
+          'Authorization': 'Bearer $_apiKey'
         },
         body: jsonEncode({
-          'model': model,
+          'model': _model,
           'messages': [
             {
               'role': 'user',
@@ -53,24 +68,25 @@ class AIService {
         throw Exception('API request failed: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      // 如果API调用失败，返回默认解释
+      print('AI解读失败: $e');
       return '这句话的意思是：可以用言语表达的道，不是永恒的道；可以用名称界定的名，不是永恒的名。无是天地的本始，有是万物的根源。它强调了道的超越性和不可言说性，同时指出了有无相生的辩证关系。';
     }
   }
 
-  // 调用大模型API查询人物信息
   static Future<Map<String, dynamic>> getFigureInfo(String name) async {
+    await _loadConfig();
+
     try {
       final prompt = '请详细介绍道教人物 $name 的生平和贡献，包括：1. 生平简介 2. 核心思想 3. 主要著作 4. 历史影响';
-      
+
       final response = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(_apiUrl),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey'
+          'Authorization': 'Bearer $_apiKey'
         },
         body: jsonEncode({
-          'model': model,
+          'model': _model,
           'messages': [
             {
               'role': 'user',
@@ -85,8 +101,7 @@ class AIService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final content = data['choices'][0]['message']['content'];
-        
-        // 解析返回的内容，提取各个部分
+
         return {
           'bio': content,
           'coreThoughts': [],
@@ -97,7 +112,6 @@ class AIService {
       }
     } catch (e) {
       print('查询人物信息失败: $e');
-      // 如果API调用失败，返回默认信息
       return {
         'bio': '$name是道教的重要人物，对道教的发展做出了重要贡献。',
         'coreThoughts': ['道教思想'],
@@ -106,14 +120,10 @@ class AIService {
     }
   }
 
-  // 根据照片生成道家真言
   static Future<String> getQuoteFromImage(File image) async {
     try {
-      // 实际项目中，这里应该将图片转换为base64并发送到API
-      // 暂时使用模拟数据
-      await Future.delayed(const Duration(seconds: 1)); // 模拟网络延迟
+      await Future.delayed(const Duration(seconds: 1));
 
-      // 模拟生成的道家真言
       final quotes = [
         '天地与我并生，而万物与我为一。',
         '道生一，一生二，二生三，三生万物。',
@@ -127,28 +137,28 @@ class AIService {
         '飘风不终朝，骤雨不终日。'
       ];
 
-      // 随机选择一条名言
       final random = Random();
       return quotes[random.nextInt(quotes.length)];
     } catch (e) {
-      // 如果API调用失败，返回默认名言
+      print('生成真言失败: $e');
       return '道可道，非常道；名可名，非常名。';
     }
   }
 
-  // 聊天功能
   static Future<String> chat(String message) async {
+    await _loadConfig();
+
     try {
       final prompt = '你是一个精通道教文化的AI助手，名叫道小来。请用简洁、有趣的方式回答用户的问题。如果问题与道教文化无关，请礼貌地引导回到道教话题。\n\n用户问题：$message';
 
       final response = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(_apiUrl),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey'
+          'Authorization': 'Bearer $_apiKey'
         },
         body: jsonEncode({
-          'model': model,
+          'model': _model,
           'messages': [
             {
               'role': 'user',
@@ -172,14 +182,10 @@ class AIService {
     }
   }
 
-  // 图片聊天功能
   static Future<String> chatWithImage(File image) async {
     try {
-      // 实际项目中，这里应该将图片转换为base64并发送到API
-      // 暂时使用模拟数据
-      await Future.delayed(const Duration(seconds: 1)); // 模拟网络延迟
+      await Future.delayed(const Duration(seconds: 1));
 
-      // 模拟AI对图片的回应
       final responses = [
         '这张图片让我想起了道教中的"道法自然"理念。大自然的和谐与平衡正是道的体现，我们应当像自然一样，保持内心的平静与和谐。',
         '从这张图片中，我感受到了"天地与我并生，万物与我为一"的境界。我们与自然是不可分割的整体，应当尊重和爱护我们的环境。',
@@ -188,7 +194,6 @@ class AIService {
         '这张图片让我感受到了宇宙的无限与永恒，正如道教所追求的"长生久视"。我们应当珍惜当下，过好每一天。'
       ];
 
-      // 随机选择一个回应
       final random = Random();
       return responses[random.nextInt(responses.length)];
     } catch (e) {
@@ -197,4 +202,3 @@ class AIService {
     }
   }
 }
-
