@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
-import 'package:dao_app/screens/figure_screen.dart';
+import 'package:dao_app/screens/figure_detail_screen.dart';
 import 'package:dao_app/services/database_service.dart';
 import 'package:dao_app/services/api_service.dart';
 
@@ -108,7 +108,7 @@ class _ThoughtScreenState extends State<ThoughtScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => FigureScreen(figureName: name),
+        builder: (context) => FigureDetailScreen(figureName: name),
       ),
     );
   }
