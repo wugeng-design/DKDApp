@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
+import 'package:dao_app/utils/toast_util.dart';
 import 'package:dao_app/services/database_service.dart';
 import 'package:dao_app/services/api_service.dart';
 
@@ -41,13 +42,14 @@ class _FigureScreenState extends State<FigureScreen> {
         throw Exception('API返回数据为空');
       }
     } catch (e) {
-      print('从API加载人物数据失败，使用本地数据: $e');
+      ToastUtil.showInfo('网络异常，正在使用本地数据');
       try {
         figures = await DatabaseService().getAllFigures();
         _useLocalData = true;
       } catch (localError) {
         print('加载本地人物数据失败: $localError');
         figures = [];
+        ToastUtil.showError('加载数据失败');
       }
     } finally {
       setState(() {
@@ -172,12 +174,6 @@ class _FigureScreenState extends State<FigureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('人物'),
-        centerTitle: true,
-        backgroundColor: AppTheme.backgroundColor,
-        elevation: 0,
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : figures.isEmpty

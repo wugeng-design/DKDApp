@@ -71,7 +71,7 @@ class _MainScreenState extends State<MainScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: '首页',
+            label: '道言',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.lightbulb),

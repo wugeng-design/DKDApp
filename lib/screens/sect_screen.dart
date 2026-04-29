@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
+import 'package:dao_app/utils/toast_util.dart';
 import 'package:dao_app/screens/figure_screen.dart';
 import 'package:dao_app/utils/ai_service.dart';
 import 'package:dao_app/services/database_service.dart';
@@ -52,13 +53,14 @@ class _SectScreenState extends State<SectScreen> {
         throw Exception('API返回数据为空');
       }
     } catch (e) {
-      print('从API加载派系数据失败，使用本地数据: $e');
+      ToastUtil.showInfo('网络异常，正在使用本地数据');
       try {
         sects = await DatabaseService().getAllSects();
         _useLocalData = true;
       } catch (localError) {
         print('加载本地派系数据失败: $localError');
         sects = [];
+        ToastUtil.showError('加载数据失败');
       }
     } finally {
       _sortSectsByDynasty();
@@ -263,12 +265,6 @@ class _SectScreenState extends State<SectScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('派系'),
-          centerTitle: true,
-          backgroundColor: AppTheme.backgroundColor,
-          elevation: 0,
-        ),
         body: const Center(
           child: CircularProgressIndicator(),
         ),
@@ -278,12 +274,6 @@ class _SectScreenState extends State<SectScreen> {
     final currentPageSects = getCurrentPageSects();
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('派系'),
-        centerTitle: true,
-        backgroundColor: AppTheme.backgroundColor,
-        elevation: 0,
-      ),
       body: Column(
         children: [
           Expanded(
