@@ -20,6 +20,8 @@ class DatabaseService {
   static List<Map<String, dynamic>> _webSects = [];
   static List<Map<String, dynamic>> _webSectInfo = [];
   static List<Map<String, dynamic>> _webSectRepresentatives = [];
+  static List<Map<String, dynamic>> _webThoughtConcepts = [];
+  static List<Map<String, dynamic>> _webThoughtConceptRepresentatives = [];
   static bool _webDataInitialized = false;
 
   Future<Database> get database async {
@@ -553,6 +555,146 @@ class DatabaseService {
       {'id': 75, 'sect_id': 29, 'figure_name': '刘沅'},
     ];
     
+    // 初始化思想概念数据
+    _webThoughtConcepts = [
+      {
+        'id': 1,
+        'name': '道',
+        'content': '道是宇宙万物的本原和规律，是道家哲学的核心概念。它超越一切具体存在，是万物产生和发展的根源。道无形无象，不可名状，却无处不在，贯穿于宇宙万物之中。道既是宇宙的本源，也是万物运行的法则。',
+        'example': '就像自然界的四季更替、昼夜轮回，万物生长收藏，都是道的体现。在现代生活中，遵循道意味着顺应自然规律，不强行干预事物的发展。例如，企业管理中的"无为而治"就是对道的一种应用，给予团队足够的空间，让其按照自身规律发展。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 2,
+        'name': '无为',
+        'content': '无为不是消极不作为，而是不违背自然规律的作为。它强调顺应自然，不强行干预，让事物按照自身规律发展。无为是一种高超的治理艺术和人生智慧，体现了道家尊重自然、顺应规律的核心思想。',
+        'example': '在管理中，领导者如果能够充分信任团队成员，给予他们足够的空间，往往能取得更好的效果，这就是无为而治的体现。在个人生活中，无为意味着不执着于结果，顺其自然，保持内心的平静与和谐。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 3,
+        'name': '阴阳',
+        'content': '阴阳是中国古代哲学中的一对基本范畴，代表着事物的两个方面，如明暗、寒热、善恶、虚实等。它们相互对立又相互依存，相互转化，构成了宇宙万物的变化规律。阴阳平衡是事物存在和发展的基础。',
+        'example': '在现代医学中，阴阳平衡的理念被应用于健康管理，强调身心的平衡状态对健康的重要性。中医认为，人体的健康取决于阴阳的平衡，当阴阳失衡时就会产生疾病。在日常生活中，我们也需要保持工作与休息、动与静的平衡。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 4,
+        'name': '五行',
+        'content': '五行指金、木、水、火、土五种基本元素，它们之间存在相生相克的关系，构成了宇宙万物的变化规律。五行理论不仅解释了自然界的物质构成，也被应用于中医、命理、风水等多个领域。',
+        'example': '在传统中医中，五行理论被用于诊断和治疗疾病，认为人体各器官与五行相对应（肝属木、心属火、脾属土、肺属金、肾属水），保持五行平衡是健康的关键。在现代环境科学中，五行相生相克的思想也可以帮助我们理解生态系统的平衡。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 5,
+        'name': '太极',
+        'content': '太极是宇宙万物产生之前的原始状态，是阴阳未分的混沌之气。太极生两仪（阴阳），两仪生四象，四象生八卦，八卦生万物。太极图形象地表达了阴阳相互依存、相互转化的关系。',
+        'example': '太极图中的黑白两部分相互包含，代表着阴中有阳、阳中有阴的哲学思想。在太极拳中，这一思想被应用于身体的运动，强调刚柔并济、虚实相生。在现代管理中，太极思想提醒我们要辩证地看待问题，把握事物的平衡。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 6,
+        'name': '气',
+        'content': '气是构成宇宙万物的基本物质，是生命的活力和能量。气无处不在，无时不有，它既是物质的，也是精神的。在人体中，气是维持生命活动的动力，包括元气、宗气、营气、卫气等。',
+        'example': '中医认为，气的运行畅通是身体健康的基础，气滞则会导致各种疾病。气功、太极拳等养生方法都是通过调节气息来增强体质。在现代心理学中，"气场"的概念也反映了气的思想在人际交往中的应用。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 7,
+        'name': '虚静',
+        'content': '虚静是道家倡导的一种精神境界，指内心的空虚和宁静。通过虚静，人们可以排除杂念，达到心灵的澄明，从而更好地认识道的本质。虚静是一种修行方法，也是一种人生态度。',
+        'example': '在现代快节奏的生活中，虚静的思想提醒我们要保持内心的宁静，不被外界的纷扰所迷惑。冥想、瑜伽等现代放松方法都体现了虚静的理念，帮助人们在喧嚣中找到内心的平静。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 8,
+        'name': '自然',
+        'content': '自然指的是事物本来的样子，是道的体现。道家主张顺应自然，反对人为的干预和扭曲。自然不仅指自然界，也指人的本性和事物的本质规律。',
+        'example': '在教育领域，顺应自然意味着尊重学生的天性和发展规律，因材施教。在环境保护中，顺应自然要求我们尊重生态规律，与自然和谐共处。在个人生活中，自然意味着保持本真，不矫揉造作。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 9,
+        'name': '长生久视',
+        'content': '长生久视是道教追求的终极目标，指通过修炼达到长生不老、长久视物的境界。这不仅是身体上的长寿，更是精神上的超越和永恒。长生久视的思想体现了道教对生命的珍视和对超越有限生命的追求。',
+        'example': '道教的养生方法，如内丹修炼、服食丹药、导引行气等，都是为了实现长生久视的目标。虽然现代科学对长生不老持怀疑态度，但道教的养生理念对现代健康观念产生了深远影响，强调身心双修、顺应自然。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 10,
+        'name': '三教合一',
+        'content': '三教合一指的是儒、释、道三教的融合。自唐宋以来，三教之间相互吸收、相互融合，形成了中国传统文化的独特格局。三教合一体现了中国文化的包容性和开放性。',
+        'example': '宋代以后，许多思想家都主张三教合一，如朱熹的理学融合了儒家的伦理、道家的宇宙观和佛教的思辨。在民间信仰中，三教神祇常常被共同供奉，体现了普通民众对不同宗教的包容态度。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 11,
+        'name': '内丹',
+        'content': '内丹是道教修炼的一种方法，指通过修炼体内的精气神，在体内形成"丹药"，从而达到长生不老的目的。内丹修炼强调性命双修，即既要修炼身体（命），也要修炼精神（性）。',
+        'example': '内丹修炼分为筑基、炼精化气、炼气化神、炼神还虚等阶段，每个阶段都有特定的方法和要求。虽然内丹修炼的神秘色彩较浓，但其强调身心统一、循序渐进的理念对现代养生仍有借鉴意义。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      {
+        'id': 12,
+        'name': '符箓',
+        'content': '符箓是道教法术的重要组成部分，指用朱砂或墨在纸上书写的神秘文字或图案。符箓被认为具有驱邪避凶、治病祈福的功效，是道教斋醮科仪中不可或缺的工具。',
+        'example': '在道教的各种法事中，符箓被广泛使用，如驱鬼、治病、祈福、超度等。虽然现代科学无法证实符箓的神秘功效，但它作为一种文化现象，反映了人们对超自然力量的信仰和追求。',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+    ];
+
+    // 初始化思想概念代表人物
+    _webThoughtConceptRepresentatives = [
+      // 道
+      {'id': 1, 'concept_id': 1, 'figure_name': '老子'},
+      {'id': 2, 'concept_id': 1, 'figure_name': '庄子'},
+      {'id': 3, 'concept_id': 1, 'figure_name': '张道陵'},
+      // 无为
+      {'id': 4, 'concept_id': 2, 'figure_name': '老子'},
+      {'id': 5, 'concept_id': 2, 'figure_name': '庄子'},
+      {'id': 6, 'concept_id': 2, 'figure_name': '文子'},
+      // 阴阳
+      {'id': 7, 'concept_id': 3, 'figure_name': '老子'},
+      {'id': 8, 'concept_id': 3, 'figure_name': '魏伯阳'},
+      {'id': 9, 'concept_id': 3, 'figure_name': '张伯端'},
+      // 五行
+      {'id': 10, 'concept_id': 4, 'figure_name': '邹衍'},
+      {'id': 11, 'concept_id': 4, 'figure_name': '葛洪'},
+      {'id': 12, 'concept_id': 4, 'figure_name': '孙思邈'},
+      // 太极
+      {'id': 13, 'concept_id': 5, 'figure_name': '陈抟'},
+      {'id': 14, 'concept_id': 5, 'figure_name': '周敦颐'},
+      {'id': 15, 'concept_id': 5, 'figure_name': '张三丰'},
+      // 气
+      {'id': 16, 'concept_id': 6, 'figure_name': '庄子'},
+      {'id': 17, 'concept_id': 6, 'figure_name': '司马承祯'},
+      {'id': 18, 'concept_id': 6, 'figure_name': '孙思邈'},
+      // 虚静
+      {'id': 19, 'concept_id': 7, 'figure_name': '老子'},
+      {'id': 20, 'concept_id': 7, 'figure_name': '庄子'},
+      {'id': 21, 'concept_id': 7, 'figure_name': '列子'},
+      // 自然
+      {'id': 22, 'concept_id': 8, 'figure_name': '老子'},
+      {'id': 23, 'concept_id': 8, 'figure_name': '庄子'},
+      {'id': 24, 'concept_id': 8, 'figure_name': '陶渊明'},
+      // 长生久视
+      {'id': 25, 'concept_id': 9, 'figure_name': '张道陵'},
+      {'id': 26, 'concept_id': 9, 'figure_name': '葛洪'},
+      {'id': 27, 'concept_id': 9, 'figure_name': '孙思邈'},
+      // 三教合一
+      {'id': 28, 'concept_id': 10, 'figure_name': '王重阳'},
+      {'id': 29, 'concept_id': 10, 'figure_name': '张三丰'},
+      {'id': 30, 'concept_id': 10, 'figure_name': '陶弘景'},
+      // 内丹
+      {'id': 31, 'concept_id': 11, 'figure_name': '魏伯阳'},
+      {'id': 32, 'concept_id': 11, 'figure_name': '张伯端'},
+      {'id': 33, 'concept_id': 11, 'figure_name': '王重阳'},
+      // 符箓
+      {'id': 34, 'concept_id': 12, 'figure_name': '张道陵'},
+      {'id': 35, 'concept_id': 12, 'figure_name': '葛玄'},
+      {'id': 36, 'concept_id': 12, 'figure_name': '陆修静'},
+    ];
+
     _webDataInitialized = true;
   }
 
@@ -632,6 +774,27 @@ class DatabaseService {
       );
     ''');
 
+    // 创建思想概念表
+    await db.execute('''
+      CREATE TABLE thought_concepts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        content TEXT,
+        example TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    ''');
+
+    // 创建思想概念代表人物关联表
+    await db.execute('''
+      CREATE TABLE thought_concept_representatives (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        concept_id INTEGER,
+        figure_name TEXT NOT NULL,
+        FOREIGN KEY (concept_id) REFERENCES thought_concepts(id) ON DELETE CASCADE
+      );
+    ''');
+
     // 插入默认名言数据
     await _insertDefaultQuotes(db);
 
@@ -640,6 +803,9 @@ class DatabaseService {
 
     // 插入默认派系数据
     await _insertDefaultSects(db);
+
+    // 插入默认思想概念数据
+    await _insertDefaultThoughtConcepts(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -1986,6 +2152,244 @@ class DatabaseService {
       for (var rep in representatives) {
         await txn.insert('sect_representatives', {
           'sect_id': sectId,
+          'figure_name': rep,
+        });
+      }
+    });
+  }
+
+  // 插入默认思想概念数据
+  Future<void> _insertDefaultThoughtConcepts(Database db) async {
+    final defaultConcepts = [
+      {
+        'name': '道',
+        'content': '道是宇宙万物的本原和规律，是道家哲学的核心概念。它超越一切具体存在，是万物产生和发展的根源。道无形无象，不可名状，却无处不在，贯穿于宇宙万物之中。道既是宇宙的本源，也是万物运行的法则。',
+        'example': '就像自然界的四季更替、昼夜轮回，万物生长收藏，都是道的体现。在现代生活中，遵循道意味着顺应自然规律，不强行干预事物的发展。例如，企业管理中的"无为而治"就是对道的一种应用，给予团队足够的空间，让其按照自身规律发展。',
+        'representatives': ['老子', '庄子', '张道陵'],
+      },
+      {
+        'name': '无为',
+        'content': '无为不是消极不作为，而是不违背自然规律的作为。它强调顺应自然，不强行干预，让事物按照自身规律发展。无为是一种高超的治理艺术和人生智慧，体现了道家尊重自然、顺应规律的核心思想。',
+        'example': '在管理中，领导者如果能够充分信任团队成员，给予他们足够的空间，往往能取得更好的效果，这就是无为而治的体现。在个人生活中，无为意味着不执着于结果，顺其自然，保持内心的平静与和谐。',
+        'representatives': ['老子', '庄子', '文子'],
+      },
+      {
+        'name': '阴阳',
+        'content': '阴阳是中国古代哲学中的一对基本范畴，代表着事物的两个方面，如明暗、寒热、善恶、虚实等。它们相互对立又相互依存，相互转化，构成了宇宙万物的变化规律。阴阳平衡是事物存在和发展的基础。',
+        'example': '在现代医学中，阴阳平衡的理念被应用于健康管理，强调身心的平衡状态对健康的重要性。中医认为，人体的健康取决于阴阳的平衡，当阴阳失衡时就会产生疾病。在日常生活中，我们也需要保持工作与休息、动与静的平衡。',
+        'representatives': ['老子', '魏伯阳', '张伯端'],
+      },
+      {
+        'name': '五行',
+        'content': '五行指金、木、水、火、土五种基本元素，它们之间存在相生相克的关系，构成了宇宙万物的变化规律。五行理论不仅解释了自然界的物质构成，也被应用于中医、命理、风水等多个领域。',
+        'example': '在传统中医中，五行理论被用于诊断和治疗疾病，认为人体各器官与五行相对应（肝属木、心属火、脾属土、肺属金、肾属水），保持五行平衡是健康的关键。在现代环境科学中，五行相生相克的思想也可以帮助我们理解生态系统的平衡。',
+        'representatives': ['邹衍', '葛洪', '孙思邈'],
+      },
+      {
+        'name': '太极',
+        'content': '太极是宇宙万物产生之前的原始状态，是阴阳未分的混沌之气。太极生两仪（阴阳），两仪生四象，四象生八卦，八卦生万物。太极图形象地表达了阴阳相互依存、相互转化的关系。',
+        'example': '太极图中的黑白两部分相互包含，代表着阴中有阳、阳中有阴的哲学思想。在太极拳中，这一思想被应用于身体的运动，强调刚柔并济、虚实相生。在现代管理中，太极思想提醒我们要辩证地看待问题，把握事物的平衡。',
+        'representatives': ['陈抟', '周敦颐', '张三丰'],
+      },
+      {
+        'name': '气',
+        'content': '气是构成宇宙万物的基本物质，是生命的活力和能量。气无处不在，无时不有，它既是物质的，也是精神的。在人体中，气是维持生命活动的动力，包括元气、宗气、营气、卫气等。',
+        'example': '中医认为，气的运行畅通是身体健康的基础，气滞则会导致各种疾病。气功、太极拳等养生方法都是通过调节气息来增强体质。在现代心理学中，"气场"的概念也反映了气的思想在人际交往中的应用。',
+        'representatives': ['庄子', '司马承祯', '孙思邈'],
+      },
+      {
+        'name': '虚静',
+        'content': '虚静是道家倡导的一种精神境界，指内心的空虚和宁静。通过虚静，人们可以排除杂念，达到心灵的澄明，从而更好地认识道的本质。虚静是一种修行方法，也是一种人生态度。',
+        'example': '在现代快节奏的生活中，虚静的思想提醒我们要保持内心的宁静，不被外界的纷扰所迷惑。冥想、瑜伽等现代放松方法都体现了虚静的理念，帮助人们在喧嚣中找到内心的平静。',
+        'representatives': ['老子', '庄子', '列子'],
+      },
+      {
+        'name': '自然',
+        'content': '自然指的是事物本来的样子，是道的体现。道家主张顺应自然，反对人为的干预和扭曲。自然不仅指自然界，也指人的本性和事物的本质规律。',
+        'example': '在教育领域，顺应自然意味着尊重学生的天性和发展规律，因材施教。在环境保护中，顺应自然要求我们尊重生态规律，与自然和谐共处。在个人生活中，自然意味着保持本真，不矫揉造作。',
+        'representatives': ['老子', '庄子', '陶渊明'],
+      },
+      {
+        'name': '长生久视',
+        'content': '长生久视是道教追求的终极目标，指通过修炼达到长生不老、长久视物的境界。这不仅是身体上的长寿，更是精神上的超越和永恒。长生久视的思想体现了道教对生命的珍视和对超越有限生命的追求。',
+        'example': '道教的养生方法，如内丹修炼、服食丹药、导引行气等，都是为了实现长生久视的目标。虽然现代科学对长生不老持怀疑态度，但道教的养生理念对现代健康观念产生了深远影响，强调身心双修、顺应自然。',
+        'representatives': ['张道陵', '葛洪', '孙思邈'],
+      },
+      {
+        'name': '三教合一',
+        'content': '三教合一指的是儒、释、道三教的融合。自唐宋以来，三教之间相互吸收、相互融合，形成了中国传统文化的独特格局。三教合一体现了中国文化的包容性和开放性。',
+        'example': '宋代以后，许多思想家都主张三教合一，如朱熹的理学融合了儒家的伦理、道家的宇宙观和佛教的思辨。在民间信仰中，三教神祇常常被共同供奉，体现了普通民众对不同宗教的包容态度。',
+        'representatives': ['王重阳', '张三丰', '陶弘景'],
+      },
+      {
+        'name': '内丹',
+        'content': '内丹是道教修炼的一种方法，指通过修炼体内的精气神，在体内形成"丹药"，从而达到长生不老的目的。内丹修炼强调性命双修，即既要修炼身体（命），也要修炼精神（性）。',
+        'example': '内丹修炼分为筑基、炼精化气、炼气化神、炼神还虚等阶段，每个阶段都有特定的方法和要求。虽然内丹修炼的神秘色彩较浓，但其强调身心统一、循序渐进的理念对现代养生仍有借鉴意义。',
+        'representatives': ['魏伯阳', '张伯端', '王重阳'],
+      },
+      {
+        'name': '符箓',
+        'content': '符箓是道教法术的重要组成部分，指用朱砂或墨在纸上书写的神秘文字或图案。符箓被认为具有驱邪避凶、治病祈福的功效，是道教斋醮科仪中不可或缺的工具。',
+        'example': '在道教的各种法事中，符箓被广泛使用，如驱鬼、治病、祈福、超度等。虽然现代科学无法证实符箓的神秘功效，但它作为一种文化现象，反映了人们对超自然力量的信仰和追求。',
+        'representatives': ['张道陵', '葛玄', '陆修静'],
+      },
+    ];
+
+    for (var concept in defaultConcepts) {
+      final conceptId = await db.insert('thought_concepts', {
+        'name': concept['name'],
+        'content': concept['content'],
+        'example': concept['example'],
+      });
+
+      final representatives = concept['representatives'] as List<dynamic>;
+      for (var representative in representatives) {
+        await db.insert('thought_concept_representatives', {
+          'concept_id': conceptId,
+          'figure_name': representative,
+        });
+      }
+    }
+  }
+
+  // 思想概念相关操作
+  Future<List<Map<String, dynamic>>> getAllThoughtConcepts() async {
+    if (kIsWeb) {
+      if (!_webDataInitialized) {
+        _initializeWebData();
+      }
+      final concepts = _webThoughtConcepts.map((c) => Map<String, dynamic>.from(c)).toList();
+      
+      for (var concept in concepts) {
+        final representatives = _webThoughtConceptRepresentatives
+            .where((r) => r['concept_id'] == concept['id'])
+            .map((r) => r['figure_name'])
+            .toList();
+        concept['representatives'] = representatives;
+      }
+      
+      return concepts;
+    }
+    
+    final db = await database;
+    final originalConcepts = await db.query('thought_concepts', orderBy: 'id ASC');
+    final concepts = originalConcepts.map((c) => Map<String, dynamic>.from(c)).toList();
+    
+    for (var concept in concepts) {
+      final representatives = await db.query(
+        'thought_concept_representatives',
+        where: 'concept_id = ?',
+        whereArgs: [concept['id']],
+      );
+      concept['representatives'] = representatives.map((r) => r['figure_name']).toList();
+    }
+    
+    return concepts;
+  }
+
+  Future<Map<String, dynamic>?> getThoughtConceptByName(String name) async {
+    if (kIsWeb) {
+      if (!_webDataInitialized) {
+        _initializeWebData();
+      }
+      final originalConcept = _webThoughtConcepts.firstWhere(
+        (c) => c['name'] == name,
+        orElse: () => {},
+      );
+      if (originalConcept.isEmpty) return null;
+      
+      final concept = Map<String, dynamic>.from(originalConcept);
+      final representatives = _webThoughtConceptRepresentatives
+          .where((r) => r['concept_id'] == concept['id'])
+          .map((r) => r['figure_name'])
+          .toList();
+      concept['representatives'] = representatives;
+      
+      return concept;
+    }
+    
+    final db = await database;
+    final result = await db.query('thought_concepts', where: 'name = ?', whereArgs: [name]);
+    if (result.isEmpty) return null;
+    
+    final originalConcept = result.first;
+    final concept = Map<String, dynamic>.from(originalConcept);
+    final representatives = await db.query(
+      'thought_concept_representatives',
+      where: 'concept_id = ?',
+      whereArgs: [concept['id']],
+    );
+    concept['representatives'] = representatives.map((r) => r['figure_name']).toList();
+    
+    return concept;
+  }
+
+  Future<void> saveThoughtConcept(
+    String name,
+    String content,
+    String example,
+    List<String> representatives,
+  ) async {
+    if (kIsWeb) {
+      final existingIndex = _webThoughtConcepts.indexWhere((c) => c['name'] == name);
+      int conceptId;
+      
+      if (existingIndex >= 0) {
+        final existingConcept = _webThoughtConcepts[existingIndex];
+        final updatedConcept = Map<String, dynamic>.from(existingConcept);
+        updatedConcept['content'] = content;
+        updatedConcept['example'] = example;
+        _webThoughtConcepts[existingIndex] = updatedConcept;
+        conceptId = existingConcept['id'] as int;
+        
+        _webThoughtConceptRepresentatives.removeWhere((r) => r['concept_id'] == conceptId);
+      } else {
+        conceptId = _webThoughtConcepts.length + 1;
+        final newConcept = {
+          'id': conceptId,
+          'name': name,
+          'content': content,
+          'example': example,
+          'created_at': DateTime.now().toIso8601String(),
+        };
+        _webThoughtConcepts.add(newConcept);
+      }
+      
+      for (var rep in representatives) {
+        _webThoughtConceptRepresentatives.add({
+          'id': _webThoughtConceptRepresentatives.length + 1,
+          'concept_id': conceptId,
+          'figure_name': rep,
+        });
+      }
+      
+      return;
+    }
+    
+    final db = await database;
+    final transaction = await db.transaction((txn) async {
+      final existingConcepts = await txn.query('thought_concepts', where: 'name = ?', whereArgs: [name]);
+      int conceptId;
+      
+      if (existingConcepts.isNotEmpty) {
+        await txn.update('thought_concepts', {
+          'content': content,
+          'example': example,
+        }, where: 'id = ?', whereArgs: [existingConcepts.first['id']]);
+        conceptId = existingConcepts.first['id'] as int;
+        
+        await txn.delete('thought_concept_representatives', where: 'concept_id = ?', whereArgs: [conceptId]);
+      } else {
+        conceptId = await txn.insert('thought_concepts', {
+          'name': name,
+          'content': content,
+          'example': example,
+        });
+      }
+      
+      for (var rep in representatives) {
+        await txn.insert('thought_concept_representatives', {
+          'concept_id': conceptId,
           'figure_name': rep,
         });
       }
