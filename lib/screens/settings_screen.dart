@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/services/user_provider.dart';
 import 'package:dao_app/screens/login_screen.dart';
-import 'package:dao_app/screens/settings_screen.dart';
+import 'package:dao_app/screens/ai_model_config_screen.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -152,6 +152,34 @@ class SettingsScreen extends StatelessWidget {
                   subtitle: '128MB',
                   onTap: () {
                     // 跳转到存储空间页面
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // AI设置
+          const Text('AI设置', style: AppTheme.subtitleStyle),
+          const SizedBox(height: 12),
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+            ),
+            child: Column(
+              children: [
+                _buildSettingItem(
+                  icon: Icons.smart_toy_outlined,
+                  title: '大模型配置',
+                  subtitle: '配置AI服务的AppKey',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AiModelConfigScreen(),
+                      ),
+                    );
                   },
                 ),
               ],
