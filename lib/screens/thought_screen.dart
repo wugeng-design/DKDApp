@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
-import 'package:dao_app/utils/toast_util.dart';
 import 'package:dao_app/screens/figure_screen.dart';
 import 'package:dao_app/services/database_service.dart';
 import 'package:dao_app/services/api_service.dart';
@@ -30,27 +29,34 @@ class _ThoughtScreenState extends State<ThoughtScreen> {
     });
 
     try {
-      List<Map<String, dynamic>>? apiConcepts = await ApiService.fetchThoughtConcepts();
-
-      if (apiConcepts != null && apiConcepts.isNotEmpty) {
-        concepts = apiConcepts;
-        await _syncToLocal(apiConcepts);
-      } else {
-        throw Exception('API返回数据为空');
+      concepts = await DatabaseService().getAllThoughtConcepts();
+      
+      if (concepts.isEmpty) {
+        await _tryLoadFromApi();
       }
     } catch (e) {
-      ToastUtil.showInfo('网络异常，正在使用本地数据');
-      try {
-        concepts = await DatabaseService().getAllThoughtConcepts();
-      } catch (localError) {
-        print('加载本地思想概念数据失败: $localError');
-        concepts = [];
-        ToastUtil.showError('加载数据失败');
-      }
+      print('加载本地思想概念数据失败: $e');
+      await _tryLoadFromApi();
     } finally {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _tryLoadFromApi() async {
+    try {
+      List<Map<String, dynamic>>? apiConcepts = await ApiService.fetchThoughtConcepts();
+      
+      if (apiConcepts != null && apiConcepts.isNotEmpty) {
+        concepts = apiConcepts;
+        await _syncToLocal(apiConcepts);
+      } else {
+        concepts = [];
+      }
+    } catch (e) {
+      print('从API获取思想概念数据失败: $e');
+      concepts = [];
     }
   }
 
