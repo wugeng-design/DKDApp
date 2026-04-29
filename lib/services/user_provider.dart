@@ -41,8 +41,6 @@ class UserProvider extends ChangeNotifier {
 
   Future<bool> loginWithPhone(String phoneNumber, String code) async {
     print('[UserProvider] loginWithPhone - 开始登录, phone: $phoneNumber');
-    _isLoading = true;
-    notifyListeners();
 
     try {
       final userData = await _userService.loginWithPhone(phoneNumber, code);
@@ -51,26 +49,19 @@ class UserProvider extends ChangeNotifier {
         _user = userData;
         _isLoggedIn = true;
         print('[UserProvider] loginWithPhone - 登录成功, isLoggedIn: $_isLoggedIn');
-        _isLoading = false;
         notifyListeners();
         return true;
       }
       print('[UserProvider] loginWithPhone - userData为null');
-      _isLoading = false;
-      notifyListeners();
       return false;
     } catch (e) {
       print('[UserProvider] loginWithPhone - 异常: $e');
-      _isLoading = false;
-      notifyListeners();
       return false;
     }
   }
 
   Future<bool> registerWithPhone(String phoneNumber, String code, String nickname) async {
     print('[UserProvider] registerWithPhone - 开始注册, phone: $phoneNumber, nickname: $nickname');
-    _isLoading = true;
-    notifyListeners();
 
     try {
       final userData = await _userService.registerWithPhone(phoneNumber, code, nickname);
@@ -79,26 +70,19 @@ class UserProvider extends ChangeNotifier {
         _user = userData;
         _isLoggedIn = true;
         print('[UserProvider] registerWithPhone - 注册成功, isLoggedIn: $_isLoggedIn');
-        _isLoading = false;
         notifyListeners();
         return true;
       }
       print('[UserProvider] registerWithPhone - userData为null');
-      _isLoading = false;
-      notifyListeners();
       return false;
     } catch (e) {
       print('[UserProvider] registerWithPhone - 异常: $e');
-      _isLoading = false;
-      notifyListeners();
       return false;
     }
   }
 
   Future<bool> loginWithPassword(String username, String password) async {
     print('[UserProvider] loginWithPassword - 开始账号密码登录, username: $username');
-    _isLoading = true;
-    notifyListeners();
 
     try {
       final userData = await _userService.loginWithPassword(username, password);
@@ -107,26 +91,19 @@ class UserProvider extends ChangeNotifier {
         _user = userData;
         _isLoggedIn = true;
         print('[UserProvider] loginWithPassword - 登录成功, isLoggedIn: $_isLoggedIn');
-        _isLoading = false;
         notifyListeners();
         return true;
       }
       print('[UserProvider] loginWithPassword - userData为null');
-      _isLoading = false;
-      notifyListeners();
       return false;
     } catch (e) {
       print('[UserProvider] loginWithPassword - 异常: $e');
-      _isLoading = false;
-      notifyListeners();
       return false;
     }
   }
 
   Future<bool> registerWithPassword(String phone, String username, String password, String nickname) async {
     print('[UserProvider] registerWithPassword - 开始账号密码注册, phone: $phone, username: $username, nickname: $nickname');
-    _isLoading = true;
-    notifyListeners();
 
     try {
       final userData = await _userService.registerWithPassword(phone, username, password, nickname);
@@ -135,18 +112,13 @@ class UserProvider extends ChangeNotifier {
         _user = userData;
         _isLoggedIn = true;
         print('[UserProvider] registerWithPassword - 注册成功, isLoggedIn: $_isLoggedIn');
-        _isLoading = false;
         notifyListeners();
         return true;
       }
       print('[UserProvider] registerWithPassword - userData为null');
-      _isLoading = false;
-      notifyListeners();
       return false;
     } catch (e) {
       print('[UserProvider] registerWithPassword - 异常: $e');
-      _isLoading = false;
-      notifyListeners();
       return false;
     }
   }

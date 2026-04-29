@@ -18,7 +18,9 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
