@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:dao_app/utils/app_theme.dart';
 import 'package:dao_app/utils/ai_service.dart';
+import 'package:dao_app/utils/toast_util.dart';
 import 'package:dao_app/screens/photo_quote_screen.dart';
 import 'package:dao_app/services/database_service.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -180,6 +181,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ));
         _isChatLoading = false;
       });
+      ToastUtil.showError('发送消息失败，请稍后重试');
     }
 
     _scrollToBottom();
@@ -233,6 +235,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ));
         _isChatLoading = false;
       });
+      ToastUtil.showError('处理图片失败，请稍后重试');
     }
 
     _scrollToBottom();

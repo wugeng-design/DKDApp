@@ -67,12 +67,6 @@ class _ThoughtScreenState extends State<ThoughtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('思想'),
-        centerTitle: true,
-        backgroundColor: AppTheme.backgroundColor,
-        elevation: 0,
-      ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
         itemCount: thoughts.length,
