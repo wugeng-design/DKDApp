@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/services/user_provider.dart';
+import 'package:dao_app/utils/toast_util.dart';
 import 'package:provider/provider.dart';
 import 'package:dao_app/screens/main_screen.dart';
 
@@ -337,12 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showSnackBar(String message) {
     print('[LoginScreen] _showSnackBar - $message');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    ToastUtil.show(message);
   }
 
   Widget _buildPasswordLoginForm() {
