@@ -11,8 +11,8 @@ class AiModelConfigScreen extends StatefulWidget {
 
 class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
   String? _selectedModelId;
-  String _appKey = '';
-  String _customModel = '';
+  final TextEditingController _appKeyController = TextEditingController();
+  final TextEditingController _customModelController = TextEditingController();
   bool _isLoading = true;
   bool _isSaving = false;
 
@@ -22,6 +22,13 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
     _loadConfig();
   }
 
+  @override
+  void dispose() {
+    _appKeyController.dispose();
+    _customModelController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadConfig() async {
     setState(() => _isLoading = true);
     try {
@@ -29,8 +36,8 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
       if (config != null) {
         setState(() {
           _selectedModelId = config.modelId;
-          _appKey = config.appKey;
-          _customModel = config.customModel ?? '';
+          _appKeyController.text = config.appKey;
+          _customModelController.text = config.customModel ?? '';
         });
       }
     } catch (e) {
@@ -41,7 +48,8 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
   }
 
   Future<void> _saveConfig() async {
-    if (_selectedModelId == null || _appKey.isEmpty) {
+    final appKey = _appKeyController.text.trim();
+    if (_selectedModelId == null || appKey.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请选择模型并输入AppKey')),
       );
@@ -50,10 +58,11 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
 
     setState(() => _isSaving = true);
     try {
+      final customModel = _customModelController.text.trim();
       final config = AiModelConfig(
         modelId: _selectedModelId!,
-        appKey: _appKey,
-        customModel: _customModel.isNotEmpty ? _customModel : null,
+        appKey: appKey,
+        customModel: customModel.isNotEmpty ? customModel : null,
       );
       await AiModelConfigService.saveConfig(config);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -85,8 +94,8 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
               await AiModelConfigService.clearConfig();
               setState(() {
                 _selectedModelId = null;
-                _appKey = '';
-                _customModel = '';
+                _appKeyController.clear();
+                _customModelController.clear();
               });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -98,6 +107,14 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
         ],
       ),
     );
+  }
+
+  void _clearAppKey() {
+    _appKeyController.clear();
+  }
+
+  void _clearCustomModel() {
+    _customModelController.clear();
   }
 
   @override
@@ -168,7 +185,9 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
                                 onChanged: (value) {
                                   setState(() {
                                     _selectedModelId = value;
-                                    _customModel = model.defaultModel;
+                                    if (_customModelController.text.isEmpty) {
+                                      _customModelController.text = model.defaultModel;
+                                    }
                                   });
                                 },
                               ))
@@ -179,8 +198,7 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
                   const Text('AppKey', style: AppTheme.subtitleStyle),
                   const SizedBox(height: 12),
                   TextField(
-                    controller: TextEditingController(text: _appKey),
-                    onChanged: (value) => setState(() => _appKey = value),
+                    controller: _appKeyController,
                     decoration: InputDecoration(
                       hintText: '请输入您的AppKey',
                       hintStyle: AppTheme.captionStyle,
@@ -193,6 +211,12 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
                         horizontal: 16,
                         vertical: 12,
                       ),
+                      suffixIcon: _appKeyController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.grey),
+                              onPressed: _clearAppKey,
+                            )
+                          : null,
                     ),
                     obscureText: true,
                     enableSuggestions: false,
@@ -207,8 +231,7 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
                   const Text('自定义模型名称（可选）', style: AppTheme.subtitleStyle),
                   const SizedBox(height: 12),
                   TextField(
-                    controller: TextEditingController(text: _customModel),
-                    onChanged: (value) => setState(() => _customModel = value),
+                    controller: _customModelController,
                     decoration: InputDecoration(
                       hintText: '留空则使用默认模型',
                       hintStyle: AppTheme.captionStyle,
@@ -221,6 +244,12 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
                         horizontal: 16,
                         vertical: 12,
                       ),
+                      suffixIcon: _customModelController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.grey),
+                              onPressed: _clearCustomModel,
+                            )
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -258,7 +287,7 @@ class _AiModelConfigScreenState extends State<AiModelConfigScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: TextButton(
-                      onPressed: _appKey.isEmpty ? null : _clearConfig,
+                      onPressed: _appKeyController.text.isEmpty ? null : _clearConfig,
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
