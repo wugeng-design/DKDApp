@@ -51,18 +51,17 @@ class UserProvider extends ChangeNotifier {
         _user = userData;
         _isLoggedIn = true;
         print('[UserProvider] loginWithPhone - 登录成功, isLoggedIn: $_isLoggedIn');
+        _isLoading = false;
         notifyListeners();
         return true;
       }
       print('[UserProvider] loginWithPhone - userData为null');
+      _isLoading = false;
       return false;
     } catch (e) {
       print('[UserProvider] loginWithPhone - 异常: $e');
-      return false;
-    } finally {
       _isLoading = false;
-      print('[UserProvider] loginWithPhone - 完成, isLoggedIn: $_isLoggedIn');
-      notifyListeners();
+      return false;
     }
   }
 
@@ -78,18 +77,17 @@ class UserProvider extends ChangeNotifier {
         _user = userData;
         _isLoggedIn = true;
         print('[UserProvider] registerWithPhone - 注册成功, isLoggedIn: $_isLoggedIn');
+        _isLoading = false;
         notifyListeners();
         return true;
       }
       print('[UserProvider] registerWithPhone - userData为null');
+      _isLoading = false;
       return false;
     } catch (e) {
       print('[UserProvider] registerWithPhone - 异常: $e');
-      return false;
-    } finally {
       _isLoading = false;
-      print('[UserProvider] registerWithPhone - 完成, isLoggedIn: $_isLoggedIn');
-      notifyListeners();
+      return false;
     }
   }
 
@@ -105,18 +103,17 @@ class UserProvider extends ChangeNotifier {
         _user = userData;
         _isLoggedIn = true;
         print('[UserProvider] loginWithPassword - 登录成功, isLoggedIn: $_isLoggedIn');
+        _isLoading = false;
         notifyListeners();
         return true;
       }
       print('[UserProvider] loginWithPassword - userData为null');
+      _isLoading = false;
       return false;
     } catch (e) {
       print('[UserProvider] loginWithPassword - 异常: $e');
-      return false;
-    } finally {
       _isLoading = false;
-      print('[UserProvider] loginWithPassword - 完成, isLoggedIn: $_isLoggedIn');
-      notifyListeners();
+      return false;
     }
   }
 
@@ -132,18 +129,17 @@ class UserProvider extends ChangeNotifier {
         _user = userData;
         _isLoggedIn = true;
         print('[UserProvider] registerWithPassword - 注册成功, isLoggedIn: $_isLoggedIn');
+        _isLoading = false;
         notifyListeners();
         return true;
       }
       print('[UserProvider] registerWithPassword - userData为null');
+      _isLoading = false;
       return false;
     } catch (e) {
       print('[UserProvider] registerWithPassword - 异常: $e');
-      return false;
-    } finally {
       _isLoading = false;
-      print('[UserProvider] registerWithPassword - 完成, isLoggedIn: $_isLoggedIn');
-      notifyListeners();
+      return false;
     }
   }
 
