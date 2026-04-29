@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dao_app/utils/app_theme.dart';
+import 'package:dao_app/screens/thought_detail_screen.dart';
 import 'package:dao_app/services/database_service.dart';
 import 'package:dao_app/services/api_service.dart';
 
@@ -20,6 +21,15 @@ class _FigureDetailScreenState extends State<FigureDetailScreen> {
   void initState() {
     super.initState();
     _loadFigureDetail();
+  }
+
+  void _handleThoughtTap(String thoughtName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ThoughtDetailScreen(conceptName: thoughtName),
+      ),
+    );
   }
 
   Future<void> _loadFigureDetail() async {
@@ -92,10 +102,13 @@ class _FigureDetailScreenState extends State<FigureDetailScreen> {
                             Wrap(
                               spacing: 8.0,
                               children: (_figure!['coreThoughts'] as List).map<Widget>((thought) {
-                                return Chip(
-                                  label: Text(thought),
-                                  backgroundColor: AppTheme.accentColor.withOpacity(0.1),
-                                  labelStyle: TextStyle(color: AppTheme.accentColor),
+                                return InkWell(
+                                  onTap: () => _handleThoughtTap(thought.toString()),
+                                  child: Chip(
+                                    label: Text(thought),
+                                    backgroundColor: AppTheme.accentColor.withOpacity(0.1),
+                                    labelStyle: TextStyle(color: AppTheme.accentColor),
+                                  ),
                                 );
                               }).toList(),
                             ),
