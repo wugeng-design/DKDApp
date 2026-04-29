@@ -54,9 +54,13 @@ class DatabaseService {
     await db.delete('sect_info');
     await db.delete('sects');
     
+    await db.delete('thought_concept_representatives');
+    await db.delete('thought_concepts');
+    
     // 插入完整的初始数据
     await _insertDefaultFigures(db);
     await _insertDefaultSects(db);
+    await _insertDefaultThoughtConcepts(db);
   }
 
   Future<Database> _initDatabase() async {
